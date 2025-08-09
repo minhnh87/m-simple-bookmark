@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bookmark Manager</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <div class="container">
+            <div class="bookmarks-container">
+                <div class="bookmark-tabs-container">
+                    <div class="bookmark-tab-buttons" role="tablist" aria-label="Bookmark navigation">
+                        <button id="bookmarks-tab" class="bookmark-tab-button active" role="tab" aria-selected="true" aria-controls="bookmarks-content">Bookmarks</button>
+                        <button id="working-bookmark-tab" class="bookmark-tab-button" role="tab" aria-selected="false" aria-controls="working-bookmark-content">Working</button>
+                    </div>
+                    <div id="bookmarks-content" class="bookmark-tab-content active" role="tabpanel" aria-labelledby="bookmarks-tab">
+                        <div id="bookmarks-list" role="grid" aria-label="Bookmarks collection"></div>
+                        
+                        <!-- Controls inside bookmarks content -->
+                        <div class="bookmark-controls">
+                            <button id="restore-default" class="control-button tooltip" aria-label="Restore default bookmarks and clear all data">
+                                <i class="fas fa-undo" aria-hidden="true"></i> Default
+                                <span class="tooltip-text">Restore default bookmarks and clear all data</span>
+                            </button>
+                            <button id="export-bookmarks" class="control-button tooltip" aria-label="Export all bookmarks, notes and tasks">
+                                <i class="fas fa-file-export" aria-hidden="true"></i> Export
+                                <span class="tooltip-text">Export all bookmarks, notes and tasks</span>
+                            </button>
+                            <button id="import-bookmarks" class="control-button tooltip" aria-label="Import bookmarks, notes and tasks from a file">
+                                <i class="fas fa-file-import" aria-hidden="true"></i> Import
+                                <span class="tooltip-text">Import bookmarks, notes and tasks from a file</span>
+                            </button>
+                            <div class="view-toggle" role="group" aria-label="View mode toggle">
+                                <button id="grid-view" class="control-button view-button active" aria-label="Switch to grid view" aria-pressed="true">
+                                    <i class="fas fa-th" aria-hidden="true"></i> Grid
+                                </button>
+                                <button id="row-view" class="control-button view-button" aria-label="Switch to row view" aria-pressed="false">
+                                    <i class="fas fa-list" aria-hidden="true"></i> Row
+                                </button>
+                            </div>
+                            <button id="toggle-form" class="control-button" aria-label="Add new bookmark">
+                                <i class="fas fa-plus" aria-hidden="true"></i> New Bookmark
+                            </button>
+                            <input type="file" id="import-file" accept=".json" style="display: none;">
+                        </div>
+                    </div>
+                    <div id="working-bookmark-content" class="bookmark-tab-content" role="tabpanel" aria-labelledby="working-bookmark-tab">
+                        <div class="working-input-container">
+                            <input type="url" id="working-bookmark-input" placeholder="Paste your working link here..." aria-label="New working link input">
+                        </div>
+                        <div id="working-bookmark-list" role="list" aria-label="Working links list"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="notes-container">
+            <div class="tabs-container">
+                <div class="tab-buttons" role="tablist" aria-label="Main navigation">
+                    <button id="notes-tab" class="tab-button active" role="tab" aria-selected="true" aria-controls="notes-content">Notes</button>
+                    <button id="sticky-tab" class="tab-button" role="tab" aria-selected="false" aria-controls="sticky-content">Sticky</button>
+                    <button id="tasks-tab" class="tab-button" role="tab" aria-selected="false" aria-controls="tasks-content">Tasks</button>
+
+                </div>
+                <div id="notes-content" class="tab-content active" role="tabpanel" aria-labelledby="notes-tab">
+                    <div id="notes-list"></div>
+                </div>
+                <div id="sticky-content" class="tab-content" role="tabpanel" aria-labelledby="sticky-tab">
+                    <div class="sticky-input-container">
+                        <input type="text" id="sticky-input" placeholder="Add a sticky note..." aria-label="New sticky note input">
+                    </div>
+                    <div id="sticky-list" role="list" aria-label="Sticky notes list"></div>
+                </div>
+                <div id="tasks-content" class="tab-content" role="tabpanel" aria-labelledby="tasks-tab">
+                    <div class="task-input-container">
+                        <input type="text" id="task-input" placeholder="Add a new task..." aria-label="New task input">
+                    </div>
+                    <div id="tasks-list" role="list" aria-label="Task list"></div>
+                </div>
+
+            </div>
+        </div>
+        
+        <div class="add-bookmark-container" id="add-form" role="dialog" aria-labelledby="add-form-title" aria-modal="true">
+            <form id="bookmark-form">
+                <h2 id="add-form-title" class="visually-hidden">Add New Bookmark</h2>
+                <div class="input-group">
+                    <input type="text" id="bookmark-name" placeholder="Website Name" required aria-label="Website name">
+                    <input type="url" id="bookmark-url" placeholder="Website URL" required aria-label="Website URL">
+                </div>
+                <div class="form-buttons">
+                    <button type="button" id="cancel-add" class="cancel-button" aria-label="Cancel adding bookmark">
+                        <i class="fas fa-times" aria-hidden="true"></i> Cancel
+                    </button>
+                    <button type="submit" id="add-bookmark" aria-label="Add bookmark">
+                        <i class="fas fa-plus" aria-hidden="true"></i> Add
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="utils.js"></script>
+    <script src="ui.js"></script>
+    <script src="bookmark.js"></script>
+    <script src="note.js"></script>
+    <script src="task.js"></script>
+    <script src="sticky.js"></script>
+    <script src="working.js"></script>
+    <script>
+        // Initialize all modules when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            window.UI.initializeUI();
+            window.Bookmarks.initializeBookmarks();
+            window.Notes.initializeNote();
+            window.Tasks.initializeTasks();
+            window.Sticky.initializeSticky();
+            window.Working.initializeWorking();
+        });
+    </script>
+</body>
+</html> 
