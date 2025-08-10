@@ -6,6 +6,7 @@ function addBookmark(e) {
     
     const name = window.UI.elements.bookmarkNameInput.value.trim();
     let url = window.UI.elements.bookmarkUrlInput.value.trim();
+    const category = window.UI.elements.bookmarkCategoryInput.value.trim().toLowerCase();
     
     // Enhanced validation
     if (!name || !url) {
@@ -27,12 +28,14 @@ function addBookmark(e) {
     // Sanitize inputs
     const sanitizedName = sanitizeInput(name);
     const sanitizedUrl = sanitizeInput(url);
+    const sanitizedCategory = category ? sanitizeInput(category) : '';
     
     // Create bookmark object with sanitized inputs
     const bookmark = {
         id: Date.now(),
         name: sanitizedName,
         url: sanitizedUrl,
+        category: sanitizedCategory,
         color: getRandomColor()
     };
     
@@ -262,6 +265,7 @@ function importBookmarks(e) {
                         name: bookmark.name || bookmark.title || 'Untitled',
                         url: bookmark.url || '',
                         color: bookmark.color || getRandomColor(),
+                        category: bookmark.category || '', // Handle legacy bookmarks without category
                         isDefault: bookmark.isDefault || false
                     }));
                     
@@ -293,6 +297,7 @@ function importBookmarks(e) {
                         name: bookmark.name || bookmark.title, // Ensure 'name' property exists
                         url: bookmark.url,
                         color: bookmark.color || getRandomColor(),
+                        category: bookmark.category || '', // Handle bookmarks without category
                         isDefault: bookmark.isDefault || false
                     }));
                     
@@ -461,6 +466,7 @@ function getBookmarksFromStorage() {
                 name: 'Markdown Documents',
                 url: 'https://nos1hahaha.bitbucket.io/reading.html',
                 color: '#cfe2ff',
+                category: 'doc',
                 isDefault: true
             }
         ];
@@ -544,7 +550,7 @@ function createBookmarkElement(bookmark) {
     return bookmarkItem;
 }
 
-// Load bookmarks with performance optimization
+// Load bookmarks with category grouping
 function loadBookmarks() {
     console.log('loadBookmarks called');
     const bookmarks = getBookmarksFromStorage();
@@ -569,19 +575,70 @@ function loadBookmarks() {
         return;
     }
     
-    console.log('Creating bookmark elements...');
+    console.log('Creating grouped bookmark elements...');
+    
+    // Group bookmarks by category
+    const groupedBookmarks = groupBookmarksByCategory(bookmarks);
+    
     // Use document fragment for better performance
     const fragment = document.createDocumentFragment();
     
-    // Loop through bookmarks and create elements
-    bookmarks.forEach((bookmark, index) => {
-        console.log(`Creating element for bookmark ${index}:`, bookmark);
-        fragment.appendChild(createBookmarkElement(bookmark));
+    // Create category groups in order: empty, personal, work, doc, then others alphabetically
+    const categoryOrder = ['', 'personal', 'work', 'doc'];
+    const allCategories = Object.keys(groupedBookmarks);
+    const otherCategories = allCategories.filter(cat => !categoryOrder.includes(cat)).sort();
+    const orderedCategories = [...categoryOrder.filter(cat => groupedBookmarks[cat]), ...otherCategories];
+    
+    orderedCategories.forEach(category => {
+        if (groupedBookmarks[category] && groupedBookmarks[category].length > 0) {
+            // Create category header
+            const categoryHeader = createCategoryHeader(category);
+            fragment.appendChild(categoryHeader);
+            
+            // Create category group container
+            const categoryGroup = document.createElement('div');
+            categoryGroup.className = 'category-group';
+            
+            // Add bookmarks in this category
+            groupedBookmarks[category].forEach(bookmark => {
+                categoryGroup.appendChild(createBookmarkElement(bookmark));
+            });
+            
+            fragment.appendChild(categoryGroup);
+        }
     });
     
     // Single DOM manipulation
     bookmarksList.appendChild(fragment);
-    console.log('Bookmarks loaded successfully');
+    console.log('Bookmarks loaded successfully with grouping');
+}
+
+// Helper function to group bookmarks by category
+function groupBookmarksByCategory(bookmarks) {
+    const groups = {};
+    
+    bookmarks.forEach(bookmark => {
+        // Handle bookmarks without category or with empty category
+        const category = bookmark.category || '';
+        
+        if (!groups[category]) {
+            groups[category] = [];
+        }
+        groups[category].push(bookmark);
+    });
+    
+    return groups;
+}
+
+// Helper function to create category header
+function createCategoryHeader(category) {
+    const header = document.createElement('div');
+    header.className = 'category-header';
+    
+    const categoryName = category === '' ? 'Uncategorized' : category.charAt(0).toUpperCase() + category.slice(1);
+    header.textContent = categoryName;
+    
+    return header;
 }
 
 // Restore default bookmarks and clear all data with enhanced working links support

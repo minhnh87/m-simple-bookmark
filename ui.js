@@ -4,6 +4,7 @@
 const bookmarkForm = document.getElementById('bookmark-form');
 const bookmarkNameInput = document.getElementById('bookmark-name');
 const bookmarkUrlInput = document.getElementById('bookmark-url');
+const bookmarkCategoryInput = document.getElementById('bookmark-category');
 const bookmarksList = document.getElementById('bookmarks-list');
 const toggleFormBtn = document.getElementById('toggle-form');
 const cancelAddBtn = document.getElementById('cancel-add');
@@ -372,6 +373,7 @@ if (typeof window !== 'undefined') {
             bookmarkForm,
             bookmarkNameInput,
             bookmarkUrlInput,
+            bookmarkCategoryInput,
             bookmarksList,
             addFormContainer,
             notesList,

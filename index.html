@@ -17,9 +17,24 @@
                         <button id="working-bookmark-tab" class="bookmark-tab-button" role="tab" aria-selected="false" aria-controls="working-bookmark-content">Working</button>
                     </div>
                     <div id="bookmarks-content" class="bookmark-tab-content active" role="tabpanel" aria-labelledby="bookmarks-tab">
+                        <!-- Bookmarks Header with View Toggle -->
+                        <div class="bookmarks-header">
+                            <div class="view-toggle" role="group" aria-label="View mode toggle">
+                                <button id="grid-view" class="control-button view-button active" aria-label="Switch to grid view" aria-pressed="true">
+                                    <i class="fas fa-th" aria-hidden="true"></i> Grid
+                                </button>
+                                <button id="row-view" class="control-button view-button" aria-label="Switch to row view" aria-pressed="false">
+                                    <i class="fas fa-list" aria-hidden="true"></i> Row
+                                </button>
+                            </div>
+                            <button id="toggle-form" class="control-button add-button" aria-label="Add new bookmark">
+                                <i class="fas fa-plus" aria-hidden="true"></i> New
+                            </button>
+                        </div>
+                        
                         <div id="bookmarks-list" role="grid" aria-label="Bookmarks collection"></div>
                         
-                        <!-- Controls inside bookmarks content -->
+                        <!-- Data Management Controls -->
                         <div class="bookmark-controls">
                             <button id="restore-default" class="control-button tooltip" aria-label="Restore default bookmarks and clear all data">
                                 <i class="fas fa-undo" aria-hidden="true"></i> Default
@@ -32,17 +47,6 @@
                             <button id="import-bookmarks" class="control-button tooltip" aria-label="Import bookmarks, notes and tasks from a file">
                                 <i class="fas fa-file-import" aria-hidden="true"></i> Import
                                 <span class="tooltip-text">Import bookmarks, notes and tasks from a file</span>
-                            </button>
-                            <div class="view-toggle" role="group" aria-label="View mode toggle">
-                                <button id="grid-view" class="control-button view-button active" aria-label="Switch to grid view" aria-pressed="true">
-                                    <i class="fas fa-th" aria-hidden="true"></i> Grid
-                                </button>
-                                <button id="row-view" class="control-button view-button" aria-label="Switch to row view" aria-pressed="false">
-                                    <i class="fas fa-list" aria-hidden="true"></i> Row
-                                </button>
-                            </div>
-                            <button id="toggle-form" class="control-button" aria-label="Add new bookmark">
-                                <i class="fas fa-plus" aria-hidden="true"></i> New Bookmark
                             </button>
                             <input type="file" id="import-file" accept=".json" style="display: none;">
                         </div>
@@ -70,7 +74,8 @@
                 </div>
                 <div id="sticky-content" class="tab-content" role="tabpanel" aria-labelledby="sticky-tab">
                     <div class="sticky-input-container">
-                        <input type="text" id="sticky-input" placeholder="Add a sticky note..." aria-label="New sticky note input">
+                        <input type="text" id="sticky-title-input" placeholder="Note title (optional)..." aria-label="Sticky note title input">
+                        <input type="text" id="sticky-input" placeholder="Note content..." aria-label="New sticky note input">
                     </div>
                     <div id="sticky-list" role="list" aria-label="Sticky notes list"></div>
                 </div>
@@ -90,6 +95,7 @@
                 <div class="input-group">
                     <input type="text" id="bookmark-name" placeholder="Website Name" required aria-label="Website name">
                     <input type="url" id="bookmark-url" placeholder="Website URL" required aria-label="Website URL">
+                    <input type="text" id="bookmark-category" placeholder="Category (e.g., personal, work, doc)" aria-label="Bookmark category">
                 </div>
                 <div class="form-buttons">
                     <button type="button" id="cancel-add" class="cancel-button" aria-label="Cancel adding bookmark">

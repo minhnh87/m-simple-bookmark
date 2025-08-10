@@ -91,11 +91,11 @@ h2 {
     border-radius: 5px;
     margin-top: 15px;
     position: fixed;
-    top: 50%;
+    top: 20%;
     left: 50%;
     transform: translate(-50%, -50%);
     width: 90%;
-    max-width: 500px;
+    max-width: 700px;
     z-index: 100;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 }
@@ -204,14 +204,38 @@ button:hover {
     flex-direction: column;
 }
 
+/* Bookmarks Header - Compact layout for space efficiency */
+.bookmarks-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 8px;
+    margin-bottom: 8px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    border: 1px solid #e9ecef;
+}
+
+.bookmarks-header .view-toggle {
+    display: flex;
+    gap: 1px;
+    margin: 0;
+}
+
+.bookmarks-header .add-button {
+    background-color: #007bff;
+    color: white;
+    padding: 4px 8px;
+    font-size: 12px;
+    border-radius: 3px;
+}
+
+.bookmarks-header .add-button:hover {
+    background-color: #0056b3;
+}
+
 #bookmarks-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 15px;
-    overflow-y: auto;
-    flex: 1;
-    padding-bottom: 15px;
-    align-content: flex-start;
+    
 }
 
 #bookmarks-list.row-view {
@@ -222,11 +246,12 @@ button:hover {
 
 #bookmarks-list.row-view .bookmark-item {
     height: auto;
-    min-height: 60px;
+    min-height: 45px;
     width: 100%;
     min-width: 100%;
     flex-direction: row;
     justify-content: space-between;
+    padding: 6px 8px;
 }
 
 #bookmarks-list.row-view .bookmark-info {
@@ -235,19 +260,19 @@ button:hover {
 
 .bookmark-item {
     background-color: white;
-    padding: 10px;
-    border-radius: 5px;
-    min-width: 140px;
-    height: 60px;
+    padding: 8px;
+    border-radius: 4px;
+    min-width: 120px;
+    height: 50px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: var(--shadow);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
     transition: var(--transition);
     overflow: hidden;
     position: relative;
     cursor: pointer;
-    border: 1px solid rgba(0,0,0,0.1);
+    border: 1px solid rgba(0,0,0,0.08);
 }
 
 .bookmark-item:hover {
@@ -295,6 +320,35 @@ button:hover {
     position: absolute;
     top: 5px;
     right: 5px;
+}
+
+/* Category Headers and Groups */
+.category-header {
+    font-size: 12px;
+    font-weight: 600;
+    color: #f44336;
+    margin: 12px 0 6px 0;
+    padding: 4px 8px;
+    background-color: var(--light-gray);
+    border-left: 3px solid #994e4e;
+    border-radius: 2px;
+}
+
+.category-header:first-child {
+    margin-top: 0;
+}
+
+.category-group {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+#bookmarks-list.row-view .category-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
 
 .delete-btn {
@@ -508,28 +562,31 @@ button:hover {
 
 .bookmark-controls {
     display: flex;
-    gap: 10px;
-    margin-top: 20px;
-    padding: 15px;
+    gap: 6px;
+    margin-top: auto;
+    padding: 8px;
     flex-wrap: wrap;
     align-items: center;
     justify-content: center;
-    position: absolute;
-    bottom: 0px;
-    width: 100%;
+    background-color: #f8f9fa;
+    border-top: 1px solid #e9ecef;
+    border-radius: 0 0 4px 4px;
+    position: relative;
+    bottom: auto;
+    width: auto;
 }
 
 .control-button {
     background-color: var(--secondary-color);
     color: white;
     border: none;
-    padding: 8px 15px;
-    border-radius: 5px;
+    padding: 6px 10px;
+    border-radius: 3px;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 12px;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 4px;
     transition: var(--transition);
     width: auto;
 }
@@ -540,17 +597,24 @@ button:hover {
 
 .view-toggle {
     display: flex;
-    gap: 5px;
-    margin-left: auto;
+    gap: 1px;
+    background-color: white;
+    border-radius: 3px;
+    padding: 1px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
 .view-button {
-    padding: 8px 12px;
+    padding: 4px 8px;
+    font-size: 12px;
+    border-radius: 2px;
+    min-width: 50px;
 }
 
 .view-button.active {
     background-color: var(--primary-color);
-    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    color: white;
 }
 
 /* Remove star button and starred bookmark styles */
@@ -624,14 +688,28 @@ button:hover {
         gap: 10px;
     }
     
+    .bookmarks-header {
+        flex-direction: column;
+        gap: 10px;
+        align-items: stretch;
+        padding: 10px;
+    }
+    
+    .bookmarks-header .view-toggle {
+        justify-content: center;
+    }
+    
     .bookmark-controls {
         flex-wrap: wrap;
         gap: 8px;
+        justify-content: space-around;
     }
     
     .control-button {
         font-size: 12px;
-        padding: 6px 10px;
+        padding: 8px 12px;
+        flex: 1;
+        min-width: 80px;
     }
     
     .tab-buttons {
@@ -653,16 +731,28 @@ button:hover {
         padding: 10px;
     }
     
-    .view-toggle {
+    .bookmarks-header {
+        padding: 8px;
+    }
+    
+    .bookmarks-header .view-toggle {
         width: 100%;
-        justify-content: center;
-        margin-left: 0;
-        margin-top: 10px;
+    }
+    
+    .bookmarks-header .view-button {
+        flex: 1;
     }
     
     .bookmark-controls {
-        flex-direction: column;
-        align-items: stretch;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+    
+    .control-button {
+        flex: 1 1 45%;
+        font-size: 11px;
+        padding: 6px 8px;
     }
     
     .add-bookmark-container {
@@ -675,14 +765,26 @@ button:hover {
 /* Sticky Notes Styling */
 .sticky-input-container {
     padding: 0 0 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
+#sticky-title-input,
 #sticky-input {
-    flex: 1;
     padding: 8px 10px;
     border: 1px solid #eaeaea;
     border-radius: 4px;
     font-size: 14px;
+}
+
+#sticky-title-input {
+    font-weight: bold;
+    border-left: 3px solid #daa520;
+}
+
+#sticky-input {
+    flex: 1;
 }
 
 #sticky-list {
@@ -696,12 +798,11 @@ button:hover {
     border: 1px solid #f0e68c;
     border-left: 4px solid #daa520;
     border-radius: 5px;
-    padding: 10px;
+    padding: 8px;
     width: 30%;
-    height: 60px;
+    min-height: 60px;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
     box-shadow: var(--shadow);
     transition: var(--transition);
     position: relative;
@@ -714,37 +815,66 @@ button:hover {
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.1);
 }
 
-.sticky-note-content {
-    font-size: 14px;
-    color: var(--primary-color);
-    line-height: 1.4;
-    flex: 1;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    margin-right: 10px;
+.sticky-note-item:hover .sticky-note-actions {
+    opacity: 1;
 }
 
-.sticky-note-actions {
-    display: flex;
-    gap: 4px;
+.sticky-note-header {
+    margin-bottom: 2px;
     flex-shrink: 0;
 }
 
+.sticky-note-title {
+    font-size: 12px;
+    font-weight: bold;
+    color: var(--primary-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-bottom: 2px;
+}
+
+.sticky-note-content {
+    font-size: 11px;
+    color: var(--secondary-color);
+    line-height: 1.2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-bottom: 4px;
+    flex: 1;
+    min-height: 0;
+    padding-right: 30px;
+}
+
+.sticky-note-actions {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    display: flex;
+    gap: 2px;
+    z-index: 10;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
 .sticky-btn {
-    background-color: rgba(255, 255, 255, 0.7);
+    background-color: rgba(255, 255, 255, 0.9);
     border: none;
     border-radius: 50%;
-    padding: 8px;
+    padding: 7px;
+    margin: 0 3px;
     cursor: pointer;
-    font-size: 14px;
-    color: rgba(0, 0, 0, 0.6);
+    font-size: 12px;
+    color: rgba(0, 0, 0, 0.7);
     transition: var(--transition);
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .sticky-btn:hover {
@@ -788,6 +918,22 @@ button:hover {
 
 /* Removed sticky-note-date styling as dates are no longer displayed */
 
+.sticky-edit-title {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #f8f0f0;
+    border-radius: 4px;
+    font-size: 14px;
+    font-family: inherit;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.sticky-edit-title:focus {
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
 .sticky-edit-textarea {
     width: 100%;
     min-height: 50px;
@@ -814,7 +960,7 @@ button:hover {
 /* Expanded view when editing */
 .sticky-note-item.editing {
     height: auto;
-    min-height: 120px;
+    min-height: 140px;
     flex-direction: column;
     align-items: stretch;
     padding: 8px;
@@ -826,6 +972,7 @@ button:hover {
     text-overflow: unset;
     margin-bottom: 10px;
 }
+
 
 /* Touch targets for mobile */
 @media (hover: none) and (pointer: coarse) {
@@ -851,30 +998,34 @@ button:hover {
         height: 32px;
         font-size: 14px;
     }
+    
+    .view-button, .control-button {
+        min-height: 44px;
+    }
 }
 
 /* Bookmark Tabs Styling */
 .bookmark-tabs-container {
-    margin-bottom: 15px;
+    margin-bottom: 8px;
 }
 
 .bookmark-tab-buttons {
     display: flex;
-    gap: 2px;
-    margin-bottom: 10px;
+    gap: 1px;
+    margin-bottom: 6px;
     background-color: #f8f9fa;
-    border-radius: 6px;
-    padding: 4px;
+    border-radius: 4px;
+    padding: 2px;
 }
 
 .bookmark-tab-button {
     flex: 1;
     background-color: transparent;
     border: none;
-    padding: 8px 12px;
-    border-radius: 4px;
+    padding: 6px 10px;
+    border-radius: 3px;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 500;
     color: var(--secondary-color);
     transition: var(--transition);
@@ -894,11 +1045,19 @@ button:hover {
     display: none;
     position: relative;
     height: calc(100vh - 55px);
+    flex-direction: column;
 }
 
 .bookmark-tab-content.active {
-    display: block;
+    display: flex;
 }
+
+#bookmarks-list {
+    flex: 1;
+    overflow-y: auto;
+    margin-bottom: 10px;
+}
+
 
 /* Working Links Styling */
 .working-input-container {

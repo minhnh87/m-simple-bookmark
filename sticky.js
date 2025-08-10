@@ -10,6 +10,7 @@ function initializeSticky() {
     if (stickyInitialized) return;
     stickyInitialized = true;
     
+    const stickyTitleInput = document.getElementById('sticky-title-input');
     const stickyInput = window.UI.elements.stickyInput;
     const stickyList = window.UI.elements.stickyList;
     
@@ -28,10 +29,13 @@ function initializeSticky() {
     stickyKeyHandler = (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
+            const title = stickyTitleInput.value.trim();
             const content = stickyInput.value.trim();
             if (content) {
-                addStickyNote(content);
+                addStickyNote(title, content);
+                stickyTitleInput.value = '';
                 stickyInput.value = '';
+                stickyTitleInput.focus();
             }
         }
     };
@@ -43,6 +47,14 @@ function initializeSticky() {
     // Add event listeners
     stickyInput.addEventListener('keypress', stickyKeyHandler);
     stickyInput.addEventListener('focus', stickyFocusHandler);
+    
+    // Add Tab key navigation between title and content
+    stickyTitleInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Tab' || e.key === 'Enter') {
+            e.preventDefault();
+            stickyInput.focus();
+        }
+    });
 }
 
 // Generate random color for sticky note
@@ -62,14 +74,16 @@ function getRandomStickyColor() {
 }
 
 // Add a new sticky note
-function addStickyNote(content) {
+function addStickyNote(title, content) {
     const stickyNotes = getStickyNotesFromStorage();
     const randomColor = getRandomStickyColor();
     
     const newNote = {
         id: Date.now(),
+        title: title || '',
         content: content,
         color: randomColor,
+        createdAt: new Date().toLocaleString()
     };
     
     stickyNotes.push(newNote);
@@ -78,11 +92,12 @@ function addStickyNote(content) {
 }
 
 // Edit a sticky note
-function editStickyNote(id, newContent) {
+function editStickyNote(id, newTitle, newContent) {
     const stickyNotes = getStickyNotesFromStorage();
     const noteIndex = stickyNotes.findIndex(note => note.id === id);
     
     if (noteIndex !== -1) {
+        stickyNotes[noteIndex].title = newTitle || '';
         stickyNotes[noteIndex].content = newContent;
         stickyNotes[noteIndex].updatedAt = new Date().toLocaleString();
         saveStickyNotesToStorage(stickyNotes);
@@ -139,13 +154,24 @@ function createStickyNoteElement(note) {
     noteDiv.style.borderColor = color.border;
     noteDiv.style.borderLeftColor = color.accent;
     
+    // Handle title display
+    const noteTitle = note.title || 'Untitled';
+    const displayTitle = noteTitle.length > 25 ? noteTitle.substring(0, 25) + '...' : noteTitle;
+    
     // Truncate content for display (max 50 characters for smaller display)
     const displayContent = note.content.length > 50 
         ? note.content.substring(0, 50) + '...' 
         : note.content;
     
+    const fullTitle = note.title ? `Title: ${note.title}\nContent: ${note.content}` : note.content;
+    
     noteDiv.innerHTML = `
-        <div class="sticky-note-content" title="${escapeHtml(note.content)}">
+        <div class="sticky-note-header">
+            <div class="sticky-note-title" title="${escapeHtml(fullTitle)}">
+                ${escapeHtml(displayTitle)}
+            </div>
+        </div>
+        <div class="sticky-note-content" title="${escapeHtml(fullTitle)}">
             ${escapeHtml(displayContent)}
         </div>
         <div class="sticky-note-actions">
@@ -155,11 +181,25 @@ function createStickyNoteElement(note) {
             <button class="sticky-btn delete-btn" onclick="window.Sticky.deleteStickyNote(${note.id})" title="Delete note">
                 <i class="fas fa-trash"></i>
             </button>
-            <button class="sticky-btn copy-btn" onclick="window.Sticky.copyStickyNote('${escapeHtml(note.content)}')" title="Copy to clipboard">
-                <i class="fas fa-copy"></i>
-            </button>
         </div>
     `;
+    
+    // Add click-to-copy functionality
+    noteDiv.addEventListener('click', (e) => {
+        // Don't trigger copy if clicking on action buttons
+        if (e.target.closest('.sticky-note-actions')) {
+            return;
+        }
+        
+        const content = note.title ? note.title + '\n' + note.content : note.content;
+        copyStickyNote(content);
+        
+        // Show visual feedback
+        noteDiv.style.transform = 'scale(0.98)';
+        setTimeout(() => {
+            noteDiv.style.transform = '';
+        }, 150);
+    });
     
     return noteDiv;
 }
@@ -172,13 +212,21 @@ function startEditStickyNote(id) {
     if (!note) return;
     
     const noteElement = document.querySelector(`[data-id="${id}"]`);
+    const headerDiv = noteElement.querySelector('.sticky-note-header');
     const contentDiv = noteElement.querySelector('.sticky-note-content');
     const actionsDiv = noteElement.querySelector('.sticky-note-actions');
     
     // Add editing class to expand the note
     noteElement.classList.add('editing');
     
-    // Create textarea for editing
+    // Create input for title editing
+    const titleInput = document.createElement('input');
+    titleInput.type = 'text';
+    titleInput.className = 'sticky-edit-title';
+    titleInput.value = note.title || '';
+    titleInput.placeholder = 'Note title (optional)';
+    
+    // Create textarea for content editing
     const textarea = document.createElement('textarea');
     textarea.className = 'sticky-edit-textarea';
     textarea.value = note.content;
@@ -197,14 +245,32 @@ function startEditStickyNote(id) {
     `;
     
     // Replace content and actions with edit interface
+    headerDiv.style.display = 'none';
     contentDiv.style.display = 'none';
     actionsDiv.style.display = 'none';
     
+    noteElement.insertBefore(titleInput, headerDiv);
     noteElement.insertBefore(textarea, contentDiv);
     noteElement.insertBefore(editActions, actionsDiv);
     
-    textarea.focus();
-    textarea.select();
+    titleInput.focus();
+    titleInput.select();
+    
+    // Handle Tab key to move between fields
+    titleInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Tab') {
+            e.preventDefault();
+            textarea.focus();
+        }
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            textarea.focus();
+        }
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            cancelEditStickyNote(id);
+        }
+    });
     
     // Handle Enter key to save (Ctrl/Cmd + Enter for new line)
     textarea.addEventListener('keydown', (e) => {
@@ -222,11 +288,13 @@ function startEditStickyNote(id) {
 // Save edited sticky note
 function saveEditStickyNote(id) {
     const noteElement = document.querySelector(`[data-id="${id}"]`);
+    const titleInput = noteElement.querySelector('.sticky-edit-title');
     const textarea = noteElement.querySelector('.sticky-edit-textarea');
+    const newTitle = titleInput.value.trim();
     const newContent = textarea.value.trim();
     
     if (newContent) {
-        editStickyNote(id, newContent);
+        editStickyNote(id, newTitle, newContent);
     } else {
         cancelEditStickyNote(id);
     }
@@ -247,6 +315,7 @@ function getStickyNotesFromStorage() {
 function saveStickyNotesToStorage(notes) {
     localStorage.setItem('stickyNotes', JSON.stringify(notes));
 }
+
 
 // Utility function to escape HTML
 function escapeHtml(text) {
