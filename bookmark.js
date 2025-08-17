@@ -141,36 +141,63 @@ function exportBookmarks() {
             console.warn('Error retrieving working links for export:', error);
             workingLinks = [];
         }
-        
+
+        // Enhanced timeline data retrieval
+        let timelineActivities = [];
+        try {
+            if (window.TimelineTracker && window.TimelineTracker.getTimelineActivities) {
+                timelineActivities = window.TimelineTracker.getTimelineActivities();
+            } else {
+                const timelineData = safeLocalStorageOperation('get', 'company-timeline-activities');
+                timelineActivities = timelineData ? JSON.parse(timelineData) : [];
+            }
+
+            // Validate timeline data structure
+            timelineActivities = timelineActivities.filter(activity =>
+                activity &&
+                typeof activity === 'object' &&
+                activity.id &&
+                activity.date &&
+                activity.activity &&
+                activity.desc
+            );
+        } catch (error) {
+            console.warn('Error retrieving timeline activities for export:', error);
+            timelineActivities = [];
+        }
+
         // Check if there's any data to export
         const hasBookmarks = bookmarks && bookmarks.length > 0;
         const hasNote = note && note.content && note.content.trim() !== '';
         const hasTasks = tasks && tasks.length > 0;
         const hasStickyNotes = stickyNotes && stickyNotes.length > 0;
         const hasWorkingLinks = workingLinks && workingLinks.length > 0;
-        
-        if (!hasBookmarks && !hasNote && !hasTasks && !hasStickyNotes && !hasWorkingLinks) {
+        const hasTimelineActivities = timelineActivities && timelineActivities.length > 0;
+
+        if (!hasBookmarks && !hasNote && !hasTasks && !hasStickyNotes && !hasWorkingLinks && !hasTimelineActivities) {
         showMessage('No data to export', 'error');
         return;
     }
     
         // Create comprehensive export data object
     const exportData = {
-            version: '2.0', // Add version for future compatibility
+            version: '2.1', // Updated version for timeline support
             exportDate: new Date().toISOString(),
             bookmarks: bookmarks || [],
             note: note || null,
             tasks: tasks || [],
             stickyNotes: stickyNotes || [],
-            workingLinks: workingLinks || []
+            workingLinks: workingLinks || [],
+            timelineActivities: timelineActivities || []
         };
-        
+
         // Add metadata for better import handling
         exportData.metadata = {
             bookmarkCount: exportData.bookmarks.length,
             taskCount: exportData.tasks.length,
             stickyNoteCount: exportData.stickyNotes.length,
             workingLinkCount: exportData.workingLinks.length,
+            timelineActivityCount: exportData.timelineActivities.length,
             hasNote: !!exportData.note
         };
         
@@ -424,7 +451,41 @@ function importBookmarks(e) {
                 } else if (importedData.workingLinks !== undefined) {
                     console.log('Working links data exists but is not a valid array:', typeof importedData.workingLinks);
                 }
-                
+
+                // Import timeline activities with validation
+                if (Array.isArray(importedData.timelineActivities) && importedData.timelineActivities.length > 0) {
+                    console.log('Processing timeline activities:', importedData.timelineActivities.length);
+                    const validTimelineActivities = importedData.timelineActivities.filter(activity =>
+                        activity &&
+                        typeof activity === 'object' &&
+                        activity.date &&
+                        activity.activity &&
+                        typeof activity.activity === 'string' &&
+                        activity.activity.trim() !== '' &&
+                        activity.desc &&
+                        typeof activity.desc === 'string' &&
+                        activity.desc.trim() !== ''
+                    ).map(activity => ({
+                        id: activity.id || Date.now() + Math.random(),
+                        date: activity.date,
+                        activity: activity.activity.trim(),
+                        desc: activity.desc.trim(),
+                        timestamp: activity.timestamp || new Date().toISOString()
+                    }));
+
+                    console.log('Valid timeline activities:', validTimelineActivities.length);
+                    if (validTimelineActivities.length > 0) {
+                        const success = safeLocalStorageOperation('set', 'company-timeline-activities', JSON.stringify(validTimelineActivities));
+                        if (success === true) {
+                            importSummary.push(`${validTimelineActivities.length} timeline activities`);
+                        } else {
+                            console.error('Failed to save timeline activities to localStorage');
+                        }
+                    }
+                } else if (importedData.timelineActivities !== undefined) {
+                    console.log('Timeline activities data exists but is not a valid array:', typeof importedData.timelineActivities);
+                }
+
                 if (importSummary.length > 0) {
                     showMessage(`Import successful! Imported: ${importSummary.join(', ')}`, 'success');
                 } else {
@@ -465,8 +526,14 @@ function getBookmarksFromStorage() {
                 id: Date.now(),
                 name: 'Markdown Documents',
                 url: 'https://nos1hahaha.bitbucket.io/reading.html',
-                color: '#cfe2ff',
-                category: 'doc',
+                color: '#f6f4ddff',
+                isDefault: true
+            },
+            {
+                id: Date.now(),
+                name: 'Timeline',
+                url: 'timeline.html',
+                color: 'rgb(202, 255, 191)',
                 isDefault: true
             }
         ];

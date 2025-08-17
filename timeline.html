@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Company Timeline Tracker</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary-color: #333;
+            --secondary-color: #007bff;
+            --accent-color: #dc3545;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --light-gray: #f8f9fa;
+            --dark-gray: #6c757d;
+            --border-color: #dee2e6;
+            --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            --border-radius: 4px;
+        }
+
+        body {
+            background: #ffffff;
+            min-height: 100vh;
+            padding: 10px;
+            color: var(--primary-color);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+
+
+
+        .controls {
+            padding: 15px;
+            background: var(--light-gray);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .form-container {
+            display: grid;
+            grid-template-columns: auto 1fr 2fr auto;
+            gap: 10px;
+            align-items: end;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            margin-bottom: 3px;
+            font-weight: 500;
+            color: var(--primary-color);
+            font-size: 0.85rem;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            padding: 8px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-size: 0.9rem;
+            transition: border-color 0.2s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 50px;
+        }
+
+        .btn {
+            padding: 8px 12px;
+            border: 1px solid transparent;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: var(--secondary-color);
+            color: white;
+            border-color: var(--secondary-color);
+        }
+
+        .btn-primary:hover {
+            background: #0056b3;
+            border-color: #0056b3;
+        }
+
+        .btn-secondary {
+            background: var(--dark-gray);
+            color: white;
+            border-color: var(--dark-gray);
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            border-color: #5a6268;
+        }
+
+        .btn-danger {
+            background: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+            border-color: #c82333;
+        }
+
+        .timeline-container {
+            padding: 15px;
+            height: 80vh;
+            overflow-y: auto;
+        }
+
+        .timeline {
+            position: relative;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: row;
+            gap: 30px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            min-height: 400px;
+            align-items: flex-start;
+        }
+
+
+
+        .timeline-item {
+            position: relative;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 12px 15px;
+            transition: all 0.2s ease;
+            min-width: 280px;
+            max-width: 320px;
+            flex-shrink: 0;
+            margin-bottom: 0;
+        }
+
+        /* Alternating positions - odd items above, even items below */
+        .timeline-item:nth-child(odd) {
+            margin-top: 20px;
+            margin-bottom: auto;
+        }
+
+        .timeline-item:nth-child(even) {
+            margin-top: 80px;
+            margin-bottom: 0;
+        }
+
+        .timeline-item:hover {
+            border-color: var(--secondary-color);
+            box-shadow: var(--shadow);
+            transform: scale(1.02);
+        }
+
+
+
+        .timeline-date {
+            background: var(--light-gray);
+            color: var(--primary-color);
+            padding: 2px 8px;
+            border-radius: var(--border-radius);
+            font-size: 0.75rem;
+            font-weight: 500;
+            display: inline-block;
+            margin-bottom: 6px;
+            border: 1px solid var(--border-color);
+        }
+
+        .timeline-activity {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 4px;
+        }
+
+        .timeline-desc {
+            color: var(--dark-gray);
+            line-height: 1.4;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .timeline-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .btn-small {
+            padding: 4px 8px;
+            font-size: 0.75rem;
+        }
+
+        /* Horizontal scrollbar styling */
+        .timeline::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .timeline::-webkit-scrollbar-track {
+            background: var(--light-gray);
+            border-radius: 4px;
+        }
+
+        .timeline::-webkit-scrollbar-thumb {
+            background: var(--secondary-color);
+            border-radius: 4px;
+        }
+
+        .timeline::-webkit-scrollbar-thumb:hover {
+            background: #0056b3;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--dark-gray);
+        }
+
+        .empty-state i {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            opacity: 0.4;
+        }
+
+
+
+
+
+        @media (max-width: 768px) {
+            .form-container {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .timeline-container {
+                padding: 10px;
+            }
+
+            .timeline {
+                min-height: 350px;
+                padding: 30px 15px;
+            }
+
+            .timeline-item {
+                min-width: 220px;
+                max-width: 250px;
+            }
+
+            .timeline-item:nth-child(odd) {
+                margin-top: 10px;
+            }
+
+            .timeline-item:nth-child(even) {
+                margin-top: 60px;
+            }
+
+            .timeline-item:nth-child(odd) {
+                margin-bottom: 50px;
+            }
+
+            .timeline-item:nth-child(even) {
+                margin-top: 50px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+
+        <div class="controls">
+            <div class="form-container">
+                <div class="form-group">
+                    <label for="activity-date">Date</label>
+                    <input type="date" id="activity-date" required>
+                </div>
+                <div class="form-group">
+                    <label for="activity-name">Activity</label>
+                    <input type="text" id="activity-name" placeholder="e.g., Hotfix Autotrade" required>
+                </div>
+                <div class="form-group">
+                    <label for="activity-desc">Description</label>
+                    <textarea id="activity-desc" placeholder="Describe what you did..." required></textarea>
+                </div>
+                <div class="form-group">
+                    <button type="button" class="btn btn-primary" onclick="addActivity()">
+                        ➕ Add
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="timeline-container">
+            <div id="timeline" class="timeline">
+                <div class="empty-state" id="empty-state">
+                    📅
+                    <h3>No activities yet</h3>
+                    <p>Start tracking your daily work activities above</p>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+
+    <script src="timeline-tracker.js"></script>
+</body>
+</html>
