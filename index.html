@@ -74,7 +74,13 @@
                 </div>
                 <div id="sticky-content" class="tab-content" role="tabpanel" aria-labelledby="sticky-tab">
                     <div class="sticky-input-container">
-                        <input type="text" id="sticky-title-input" placeholder="Note title (optional)..." aria-label="Sticky note title input">
+                        <div class="sticky-title-row">
+                            <input type="text" id="sticky-title-input" placeholder="Note title (optional)..." aria-label="Sticky note title input">
+                            <label class="sticky-visibility-label">
+                                <input type="checkbox" id="sticky-visibility-checkbox" aria-label="Show content visibility">
+                                Show content
+                            </label>
+                        </div>
                         <input type="text" id="sticky-input" placeholder="Note content..." aria-label="New sticky note input">
                     </div>
                     <div id="sticky-list" role="list" aria-label="Sticky notes list"></div>

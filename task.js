@@ -55,10 +55,14 @@ function toggleTaskCompleted(id) {
 }
 
 function deleteTask(id) {
-    const tasks = getTasksFromStorage();
-    const filteredTasks = tasks.filter(task => task.id !== id);
-    localStorage.setItem('tasks', JSON.stringify(filteredTasks));
-    renderTasks(filteredTasks);
+    // Confirm before delete
+    if (confirm('Are you sure you want to delete this task?')) {
+        const tasks = getTasksFromStorage();
+        const filteredTasks = tasks.filter(task => task.id !== id);
+        localStorage.setItem('tasks', JSON.stringify(filteredTasks));
+        renderTasks(filteredTasks);
+        showMessage('Task deleted', 'info');
+    }
 }
 
 function renderTasks(tasks) {

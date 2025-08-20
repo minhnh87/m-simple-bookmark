@@ -770,6 +770,27 @@ button:hover {
     gap: 8px;
 }
 
+.sticky-title-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.sticky-visibility-label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 14px;
+    color: #666;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.sticky-visibility-label input[type="checkbox"] {
+    margin: 0;
+    cursor: pointer;
+}
+
 #sticky-title-input,
 #sticky-input {
     padding: 8px 10px;
@@ -781,6 +802,7 @@ button:hover {
 #sticky-title-input {
     font-weight: bold;
     border-left: 3px solid #daa520;
+    flex: 1;
 }
 
 #sticky-input {
@@ -949,6 +971,24 @@ button:hover {
 .sticky-edit-textarea:focus {
     outline: none;
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.sticky-edit-visibility {
+    margin-bottom: 10px;
+}
+
+.sticky-edit-visibility label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 14px;
+    color: #666;
+    cursor: pointer;
+}
+
+.sticky-edit-visibility input[type="checkbox"] {
+    margin: 0;
+    cursor: pointer;
 }
 
 .sticky-edit-actions {

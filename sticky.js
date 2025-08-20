@@ -31,10 +31,13 @@ function initializeSticky() {
             e.preventDefault();
             const title = stickyTitleInput.value.trim();
             const content = stickyInput.value.trim();
+            const visibilityCheckbox = document.getElementById('sticky-visibility-checkbox');
+            const showContent = visibilityCheckbox.checked;
             if (content) {
-                addStickyNote(title, content);
+                addStickyNote(title, content, showContent);
                 stickyTitleInput.value = '';
                 stickyInput.value = '';
+                visibilityCheckbox.checked = false; // Reset checkbox
                 stickyTitleInput.focus();
             }
         }
@@ -74,31 +77,33 @@ function getRandomStickyColor() {
 }
 
 // Add a new sticky note
-function addStickyNote(title, content) {
+function addStickyNote(title, content, showContent = false) {
     const stickyNotes = getStickyNotesFromStorage();
     const randomColor = getRandomStickyColor();
-    
+
     const newNote = {
         id: Date.now(),
         title: title || '',
         content: content,
+        showContent: showContent,
         color: randomColor,
         createdAt: new Date().toLocaleString()
     };
-    
+
     stickyNotes.push(newNote);
     saveStickyNotesToStorage(stickyNotes);
     displayStickyNotes();
 }
 
 // Edit a sticky note
-function editStickyNote(id, newTitle, newContent) {
+function editStickyNote(id, newTitle, newContent, showContent) {
     const stickyNotes = getStickyNotesFromStorage();
     const noteIndex = stickyNotes.findIndex(note => note.id === id);
-    
+
     if (noteIndex !== -1) {
         stickyNotes[noteIndex].title = newTitle || '';
         stickyNotes[noteIndex].content = newContent;
+        stickyNotes[noteIndex].showContent = showContent;
         stickyNotes[noteIndex].updatedAt = new Date().toLocaleString();
         saveStickyNotesToStorage(stickyNotes);
         displayStickyNotes();
@@ -117,9 +122,11 @@ function deleteStickyNote(id) {
 // Copy sticky note content to clipboard
 function copyStickyNote(content) {
     navigator.clipboard.writeText(content).then(() => {
-        // Copy successful - no message needed
+        // Show success notification
+        showMessage('Copied', 'success');
     }).catch(err => {
         console.error('Failed to copy: ', err);
+        showMessage('Failed to copy to clipboard', 'error');
     });
 }
 
@@ -157,12 +164,13 @@ function createStickyNoteElement(note) {
     // Handle title display
     const noteTitle = note.title || 'Untitled';
     const displayTitle = noteTitle.length > 25 ? noteTitle.substring(0, 25) + '...' : noteTitle;
-    
-    // Truncate content for display (max 50 characters for smaller display)
-    const displayContent = note.content.length > 50 
-        ? note.content.substring(0, 50) + '...' 
-        : note.content;
-    
+
+    // Handle content visibility - default to hidden for existing notes without showContent property
+    const shouldShowContent = note.showContent === true;
+    const displayContent = shouldShowContent
+        ? (note.content.length > 50 ? note.content.substring(0, 50) + '...' : note.content)
+        : 'hidden';
+
     const fullTitle = note.title ? `Title: ${note.title}\nContent: ${note.content}` : note.content;
     
     noteDiv.innerHTML = `
@@ -190,10 +198,10 @@ function createStickyNoteElement(note) {
         if (e.target.closest('.sticky-note-actions')) {
             return;
         }
-        
-        const content = note.title ? note.title + '\n' + note.content : note.content;
-        copyStickyNote(content);
-        
+
+        // Only copy the content, not the title
+        copyStickyNote(note.content);
+
         // Show visual feedback
         noteDiv.style.transform = 'scale(0.98)';
         setTimeout(() => {
@@ -231,7 +239,18 @@ function startEditStickyNote(id) {
     textarea.className = 'sticky-edit-textarea';
     textarea.value = note.content;
     textarea.placeholder = 'Edit your note...';
-    
+
+    // Create visibility checkbox for editing
+    const visibilityContainer = document.createElement('div');
+    visibilityContainer.className = 'sticky-edit-visibility';
+    const shouldShowContent = note.showContent === true;
+    visibilityContainer.innerHTML = `
+        <label>
+            <input type="checkbox" class="sticky-edit-visibility-checkbox" ${shouldShowContent ? 'checked' : ''}>
+            Show content
+        </label>
+    `;
+
     // Create edit actions
     const editActions = document.createElement('div');
     editActions.className = 'sticky-edit-actions';
@@ -248,9 +267,10 @@ function startEditStickyNote(id) {
     headerDiv.style.display = 'none';
     contentDiv.style.display = 'none';
     actionsDiv.style.display = 'none';
-    
+
     noteElement.insertBefore(titleInput, headerDiv);
     noteElement.insertBefore(textarea, contentDiv);
+    noteElement.insertBefore(visibilityContainer, actionsDiv);
     noteElement.insertBefore(editActions, actionsDiv);
     
     titleInput.focus();
@@ -290,11 +310,13 @@ function saveEditStickyNote(id) {
     const noteElement = document.querySelector(`[data-id="${id}"]`);
     const titleInput = noteElement.querySelector('.sticky-edit-title');
     const textarea = noteElement.querySelector('.sticky-edit-textarea');
+    const visibilityCheckbox = noteElement.querySelector('.sticky-edit-visibility-checkbox');
     const newTitle = titleInput.value.trim();
     const newContent = textarea.value.trim();
-    
+    const showContent = visibilityCheckbox.checked;
+
     if (newContent) {
-        editStickyNote(id, newTitle, newContent);
+        editStickyNote(id, newTitle, newContent, showContent);
     } else {
         cancelEditStickyNote(id);
     }

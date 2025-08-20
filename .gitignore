@@ -1,5 +1,6 @@
 .claude/
 .serena/
+.idea/
 CLAUDE.md
 settings.local.json
 .DS_Store
