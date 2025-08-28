@@ -49,7 +49,8 @@ body {
     background-color: white;
     box-shadow: var(--shadow);
     padding: 10px;
-    height: 100vh;
+    min-height: 100vh;
+    height: auto;
 }
 
 .notes-container {
@@ -1102,6 +1103,9 @@ button:hover {
 /* Working Links Styling */
 .working-input-container {
     padding: 0 0 15px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
 }
 
 #working-input,
@@ -1119,13 +1123,21 @@ button:hover {
     display: flex;
     flex-direction: column;
     gap: 0px;
+    overflow-y: auto;
+    max-height: none;
 }
 
 .working-link-item {
+    border-bottom: 1px solid #f0f0f0;
+    background: white;
 }
 
 .working-link-item:hover {
     background-color: #f8f9fa;
+}
+
+.working-link-item:last-child {
+    border-bottom: none;
 }
 
 .working-link-container {
@@ -1140,18 +1152,89 @@ button:hover {
     text-decoration: none;
     font-size: 14px;
     flex: 1;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
     margin-right: 10px;
     min-width: 0;
     cursor: pointer;
     width: 90%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-.working-link:hover {
+.working-link-favicon {
+    flex-shrink: 0;
+    border-radius: 2px;
+}
+
+.working-link-text {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.working-link-title {
+    font-weight: 500;
+    font-size: 14px;
+    color: #333;
+    margin-bottom: 2px;
+    border: none;
+    background: transparent;
+    padding: 0;
+    width: 100%;
+    font-family: inherit;
+    outline: none;
+    cursor: pointer;
+}
+
+.working-link-title:hover {
+    background: rgba(0, 123, 255, 0.05);
+    cursor: text;
+}
+
+.working-link-title:focus {
+    background: white;
+    border: 1px solid #007bff;
+    border-radius: 3px;
+    padding: 2px 4px;
+    margin: -2px -4px;
+    cursor: text;
+}
+
+.working-link-url {
+    font-size: 12px;
+    color: #6c757d;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.working-link:hover .working-link-title {
     color: #0056b3;
     text-decoration: underline;
+}
+
+.working-link:hover .working-link-url {
+    color: #495057;
+}
+
+/* Working links domain grouping styles */
+.working-domain-label {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 8px 12px;
+    margin: 10px 0 5px 0;
+    border-radius: 12px;
+    display: inline-block;
+    color: #333;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    max-width: calc(100% - 16px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 1.2;
+    min-height: 32px;
 }
 
 .working-delete-btn {

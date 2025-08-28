@@ -24,10 +24,12 @@ function addWorkingLink(url) {
     // Sanitize URL
     const sanitizedUrl = sanitizeInput(url);
     
-    // Create working link object
+    // Create working link object with placeholders
     const workingLink = {
         id: Date.now(),
         url: sanitizedUrl,
+        title: 'Loading...',
+        favicon: null,
         timestamp: new Date().toISOString()
     };
     
@@ -48,6 +50,80 @@ function addWorkingLink(url) {
     
     // Show success message
     showMessage('Working link added', 'success');
+    
+    // Fetch metadata asynchronously
+    fetchLinkMetadata(workingLink.id, sanitizedUrl);
+}
+
+// Fetch link metadata (title and favicon)
+async function fetchLinkMetadata(linkId, url) {
+    try {
+        const urlObj = new URL(url);
+        const domain = urlObj.hostname;
+        
+        // Get favicon URL using Google's favicon service
+        const faviconUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=16`;
+        
+        // Use domain as title (we can't fetch page title due to CORS)
+        let title = domain;
+        
+        // Try to make title prettier by removing common prefixes
+        if (title.startsWith('www.')) {
+            title = title.substring(4);
+        }
+        
+        // Capitalize first letter for better appearance
+        title = title.charAt(0).toUpperCase() + title.slice(1);
+        
+        // Update immediately with available data
+        updateWorkingLinkMetadata(linkId, title, faviconUrl);
+        
+    } catch (error) {
+        console.error('Error processing link metadata:', error);
+        // Use fallback values
+        try {
+            const urlObj = new URL(url);
+            const fallbackTitle = urlObj.hostname.replace('www.', '');
+            const fallbackFavicon = `https://www.google.com/s2/favicons?domain=${urlObj.hostname}&sz=16`;
+            updateWorkingLinkMetadata(linkId, fallbackTitle, fallbackFavicon);
+        } catch (fallbackError) {
+            // If URL parsing fails, use the URL itself as title
+            updateWorkingLinkMetadata(linkId, url, null);
+        }
+    }
+}
+
+// Update working link metadata
+function updateWorkingLinkMetadata(linkId, title, faviconUrl) {
+    const workingLinks = getWorkingLinksFromStorage();
+    const linkIndex = workingLinks.findIndex(link => link.id === linkId);
+    
+    if (linkIndex !== -1) {
+        workingLinks[linkIndex].title = title;
+        workingLinks[linkIndex].favicon = faviconUrl;
+        
+        // Save updated data
+        safeLocalStorageOperation('set', 'workingLinks', JSON.stringify(workingLinks));
+        
+        // Reload working links to show updated metadata
+        loadWorkingLinks();
+    }
+}
+
+// Update working link title
+function updateWorkingLinkTitle(linkId, newTitle) {
+    const workingLinks = getWorkingLinksFromStorage();
+    const linkIndex = workingLinks.findIndex(link => link.id === linkId);
+    
+    if (linkIndex !== -1 && newTitle.trim() !== '') {
+        workingLinks[linkIndex].title = newTitle.trim();
+        
+        // Save updated data
+        safeLocalStorageOperation('set', 'workingLinks', JSON.stringify(workingLinks));
+        
+        // Show success message
+        showMessage('Title updated!', 'success');
+    }
 }
 
 // Delete working link function
@@ -104,14 +180,76 @@ function createWorkingLinkElement(workingLink) {
     linkElement.target = '_blank';
     linkElement.rel = 'noopener noreferrer';
     linkElement.className = 'working-link';
-    linkElement.textContent = workingLink.url;
-    linkElement.setAttribute('aria-label', `Open working link: ${workingLink.url}`);
+    
+    // Create favicon element
+    const faviconElement = document.createElement('img');
+    faviconElement.className = 'working-link-favicon';
+    faviconElement.width = 16;
+    faviconElement.height = 16;
+    faviconElement.alt = '';
+    faviconElement.setAttribute('aria-hidden', 'true');
+    
+    if (workingLink.favicon) {
+        faviconElement.src = workingLink.favicon;
+        faviconElement.onerror = function() {
+            this.style.display = 'none';
+        };
+    } else {
+        faviconElement.style.display = 'none';
+    }
+    
+    // Create title/url container
+    const textContainer = document.createElement('div');
+    textContainer.className = 'working-link-text';
+    
+    // Create editable title element
+    const titleElement = document.createElement('input');
+    titleElement.type = 'text';
+    titleElement.className = 'working-link-title';
+    titleElement.value = workingLink.title || 'Loading...';
+    titleElement.setAttribute('aria-label', 'Edit link title');
+    
+    // Add edit functionality
+    titleElement.addEventListener('blur', () => {
+        updateWorkingLinkTitle(workingLink.id, titleElement.value);
+    });
+    
+    titleElement.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            titleElement.blur(); // Trigger save
+        }
+        if (e.key === 'Escape') {
+            titleElement.value = workingLink.title; // Reset to original
+            titleElement.blur();
+        }
+    });
+    
+    // Prevent link click when editing title
+    titleElement.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+    });
+    
+    // Create URL element (smaller, subdued)
+    const urlElement = document.createElement('div');
+    urlElement.className = 'working-link-url';
+    urlElement.textContent = workingLink.url;
+    
+    // Append text elements
+    textContainer.appendChild(titleElement);
+    textContainer.appendChild(urlElement);
+    
+    // Append favicon and text to link
+    linkElement.appendChild(faviconElement);
+    linkElement.appendChild(textContainer);
+    
+    linkElement.setAttribute('aria-label', `Open working link: ${workingLink.title || workingLink.url}`);
     
     // Create delete button
     const deleteBtn = document.createElement('button');
     deleteBtn.className = 'working-delete-btn';
     deleteBtn.innerHTML = '<i class="fas fa-times" aria-hidden="true"></i>';
-    deleteBtn.setAttribute('aria-label', `Delete working link: ${workingLink.url}`);
+    deleteBtn.setAttribute('aria-label', `Delete working link: ${workingLink.title || workingLink.url}`);
     deleteBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         deleteWorkingLink(workingLink.id);
@@ -125,8 +263,87 @@ function createWorkingLinkElement(workingLink) {
     return workingLinkItem;
 }
 
-// Load working links
+// Group working links by domain
+function groupWorkingLinksByDomain(workingLinks) {
+    const groups = {};
+    
+    workingLinks.forEach(link => {
+        try {
+            const urlObj = new URL(link.url);
+            const domain = urlObj.hostname.replace('www.', '');
+            
+            if (!groups[domain]) {
+                groups[domain] = [];
+            }
+            groups[domain].push(link);
+        } catch (error) {
+            // If URL parsing fails, put in "Others" group
+            if (!groups['Others']) {
+                groups['Others'] = [];
+            }
+            groups['Others'].push(link);
+        }
+    });
+    
+    // Sort each group by timestamp (newest first)
+    Object.keys(groups).forEach(domain => {
+        groups[domain].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    });
+    
+    return groups;
+}
+
+// Generate color for domain
+function getDomainColor(domain) {
+    // Simple hash function to generate consistent colors for domains
+    let hash = 0;
+    for (let i = 0; i < domain.length; i++) {
+        hash = domain.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    
+    // Convert hash to HSL color with good saturation and lightness
+    const hue = Math.abs(hash) % 360;
+    return `hsl(${hue}, 65%, 85%)`; // Light, pleasant colors
+}
+
+// Create simple domain label with smart truncation
+function createDomainLabel(domain) {
+    const domainLabel = document.createElement('div');
+    domainLabel.className = 'working-domain-label';
+    
+    // Smart domain shortening for very long domains
+    let displayDomain = domain;
+    if (domain.length > 30) {
+        // For very long domains, show first part + "..." + TLD
+        const parts = domain.split('.');
+        if (parts.length > 2) {
+            const firstPart = parts[0];
+            const lastPart = parts[parts.length - 1];
+            displayDomain = `${firstPart.substring(0, 15)}...${lastPart}`;
+        } else {
+            // Simple truncation for domains without multiple subdomains
+            displayDomain = domain.substring(0, 27) + '...';
+        }
+    }
+    
+    domainLabel.textContent = displayDomain;
+    domainLabel.style.backgroundColor = getDomainColor(domain);
+    domainLabel.setAttribute('title', domain); // Full domain on hover
+    
+    return domainLabel;
+}
+
+// Load working links (grouped or list based on view mode)
 function loadWorkingLinks() {
+    if (workingViewMode === 'grouped') {
+        loadWorkingLinksAsGroups();
+    } else {
+        loadWorkingLinksAsList();
+    }
+}
+
+// Load working links with domain grouping
+function loadWorkingLinksAsGroups() {
     const workingLinks = getWorkingLinksFromStorage();
     const workingList = window.UI.elements.workingBookmarkList;
     
@@ -140,15 +357,27 @@ function loadWorkingLinks() {
         return;
     }
     
+    // Group links by domain
+    const groupedLinks = groupWorkingLinksByDomain(workingLinks);
+    
+    // Sort domains alphabetically
+    const sortedDomains = Object.keys(groupedLinks).sort();
+    
     // Use document fragment for better performance
     const fragment = document.createDocumentFragment();
     
-    // Sort by timestamp (newest first)
-    workingLinks.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-    
-    // Loop through working links and create elements
-    workingLinks.forEach(workingLink => {
-        fragment.appendChild(createWorkingLinkElement(workingLink));
+    // Create groups
+    sortedDomains.forEach(domain => {
+        const links = groupedLinks[domain];
+        
+        // Create domain label
+        const domainLabel = createDomainLabel(domain);
+        fragment.appendChild(domainLabel);
+        
+        // Add links for this domain
+        links.forEach(workingLink => {
+            fragment.appendChild(createWorkingLinkElement(workingLink));
+        });
     });
     
     // Single DOM manipulation
@@ -194,14 +423,37 @@ function clearAllWorkingLinks() {
 function validateWorkingLinksData() {
     try {
         const workingLinks = getWorkingLinksFromStorage();
-        const validLinks = workingLinks.filter(link => {
-            return link && 
-                   typeof link === 'object' && 
-                   link.id && 
-                   link.url && 
-                   typeof link.url === 'string' &&
-                   link.url.trim() !== '';
-        });
+        const validLinks = workingLinks.map(link => {
+            // Ensure link has required properties
+            if (link && 
+                typeof link === 'object' && 
+                link.id && 
+                link.url && 
+                typeof link.url === 'string' &&
+                link.url.trim() !== '') {
+                
+                // Add missing properties with defaults for existing links
+                if (!link.hasOwnProperty('title') || link.title === 'Loading...') {
+                    const urlObj = new URL(link.url);
+                    let title = urlObj.hostname;
+                    if (title.startsWith('www.')) {
+                        title = title.substring(4);
+                    }
+                    title = title.charAt(0).toUpperCase() + title.slice(1);
+                    link.title = title;
+                }
+                if (!link.hasOwnProperty('favicon')) {
+                    const urlObj = new URL(link.url);
+                    link.favicon = `https://www.google.com/s2/favicons?domain=${urlObj.hostname}&sz=16`;
+                }
+                if (!link.hasOwnProperty('timestamp')) {
+                    link.timestamp = new Date().toISOString();
+                }
+                
+                return link;
+            }
+            return null;
+        }).filter(link => link !== null);
         
         if (validLinks.length !== workingLinks.length) {
             console.warn(`Cleaned ${workingLinks.length - validLinks.length} invalid working links`);
@@ -253,12 +505,108 @@ function exportWorkingLinksToClipboard() {
     }
 }
 
+// Refresh metadata for all existing links
+function refreshAllMetadata() {
+    const workingLinks = getWorkingLinksFromStorage();
+    let updated = false;
+    
+    workingLinks.forEach(link => {
+        if (link.title === 'Loading...' || !link.title || !link.favicon) {
+            try {
+                const urlObj = new URL(link.url);
+                let title = urlObj.hostname;
+                if (title.startsWith('www.')) {
+                    title = title.substring(4);
+                }
+                title = title.charAt(0).toUpperCase() + title.slice(1);
+                link.title = title;
+                link.favicon = `https://www.google.com/s2/favicons?domain=${urlObj.hostname}&sz=16`;
+                updated = true;
+            } catch (error) {
+                console.error('Error updating metadata for link:', link.url);
+                link.title = link.url;
+                link.favicon = null;
+            }
+        }
+    });
+    
+    if (updated) {
+        safeLocalStorageOperation('set', 'workingLinks', JSON.stringify(workingLinks));
+        loadWorkingLinks();
+    }
+}
+
 // Initialize working links module with validation
 function initializeWorking() {
     // Validate existing data on startup
     validateWorkingLinksData();
+    // Refresh metadata for any existing links
+    refreshAllMetadata();
     loadWorkingLinks();
     setupWorkingEventListeners();
+    // Setup view toggle button
+    setupWorkingViewToggle();
+    updateWorkingViewButton();
+}
+
+// Setup working view toggle button
+function setupWorkingViewToggle() {
+    const viewButton = document.getElementById('working-view-toggle');
+    if (viewButton) {
+        viewButton.addEventListener('click', toggleWorkingViewMode);
+    }
+}
+
+// Working links view mode (grouped or list)
+let workingViewMode = localStorage.getItem('workingViewMode') || 'grouped';
+
+// Toggle working links view mode
+function toggleWorkingViewMode() {
+    workingViewMode = workingViewMode === 'grouped' ? 'list' : 'grouped';
+    localStorage.setItem('workingViewMode', workingViewMode);
+    loadWorkingLinks();
+    updateWorkingViewButton();
+}
+
+// Update working view button text
+function updateWorkingViewButton() {
+    const viewButton = document.getElementById('working-view-toggle');
+    if (viewButton) {
+        viewButton.innerHTML = workingViewMode === 'grouped' ? 
+            '<i class="fas fa-list" aria-hidden="true"></i> List View' :
+            '<i class="fas fa-layer-group" aria-hidden="true"></i> Group View';
+        viewButton.setAttribute('aria-label', `Switch to ${workingViewMode === 'grouped' ? 'list' : 'group'} view`);
+    }
+}
+
+// Load working links in list format (original)
+function loadWorkingLinksAsList() {
+    const workingLinks = getWorkingLinksFromStorage();
+    const workingList = window.UI.elements.workingBookmarkList;
+    
+    workingList.innerHTML = '';
+    
+    if (workingLinks.length === 0) {
+        const emptyMessage = document.createElement('div');
+        emptyMessage.className = 'working-empty-message';
+        emptyMessage.textContent = 'No working links yet. Add some above!';
+        workingList.appendChild(emptyMessage);
+        return;
+    }
+    
+    // Use document fragment for better performance
+    const fragment = document.createDocumentFragment();
+    
+    // Sort by timestamp (newest first)
+    workingLinks.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    
+    // Loop through working links and create elements
+    workingLinks.forEach(workingLink => {
+        fragment.appendChild(createWorkingLinkElement(workingLink));
+    });
+    
+    // Single DOM manipulation
+    workingList.appendChild(fragment);
 }
 
 // Export functions for use in other modules
@@ -273,6 +621,14 @@ if (typeof window !== 'undefined') {
         createWorkingLinkElement,
         validateWorkingLinksData,
         getWorkingLinksCount,
-        exportWorkingLinksToClipboard
+        exportWorkingLinksToClipboard,
+        refreshAllMetadata,
+        toggleWorkingViewMode,
+        updateWorkingViewButton,
+        groupWorkingLinksByDomain,
+        loadWorkingLinksAsGroups,
+        loadWorkingLinksAsList,
+        getDomainColor,
+        updateWorkingLinkTitle
     };
 }

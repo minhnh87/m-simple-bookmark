@@ -181,7 +181,7 @@ function exportBookmarks() {
     
         // Create comprehensive export data object
     const exportData = {
-            version: '2.1', // Updated version for timeline support
+            version: '2.2', // Updated version for working links title/favicon support
             exportDate: new Date().toISOString(),
             bookmarks: bookmarks || [],
             note: note || null,
@@ -435,6 +435,8 @@ function importBookmarks(e) {
                     }).map(link => ({
                         id: link.id || Date.now() + Math.random(), // Ensure unique ID
                         url: link.url.trim(),
+                        title: link.title || new URL(link.url.trim()).hostname.replace('www.', '').charAt(0).toUpperCase() + new URL(link.url.trim()).hostname.replace('www.', '').slice(1),
+                        favicon: link.favicon || `https://www.google.com/s2/favicons?domain=${new URL(link.url.trim()).hostname}&sz=16`,
                         timestamp: link.timestamp || new Date().toISOString()
                     }));
                     
@@ -442,7 +444,13 @@ function importBookmarks(e) {
                     if (validWorkingLinks.length > 0) {
                         const success = safeLocalStorageOperation('set', 'workingLinks', JSON.stringify(validWorkingLinks));
                         if (success === true && window.Working && window.Working.loadWorkingLinks) {
-                            setTimeout(() => window.Working.loadWorkingLinks(), 200);
+                            setTimeout(() => {
+                                // Refresh metadata for imported links that might not have title/favicon
+                                if (window.Working.refreshAllMetadata) {
+                                    window.Working.refreshAllMetadata();
+                                }
+                                window.Working.loadWorkingLinks();
+                            }, 200);
                             importSummary.push(`${validWorkingLinks.length} working links`);
                         } else if (success !== true) {
                             console.error('Failed to save working links to localStorage');
