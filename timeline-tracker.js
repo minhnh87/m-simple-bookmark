@@ -27,23 +27,6 @@ function getTimelineActivities() {
     return getActivities();
 }
 
-// Generate random color for timeline items
-function getRandomColor() {
-    const colors = [
-        '#FFE5E5', // Light pink
-        '#E5F3FF', // Light blue
-        '#E5FFE5', // Light green
-        '#FFF5E5', // Light orange
-        '#F0E5FF', // Light purple
-        '#FFFFE5', // Light yellow
-        '#E5FFFF', // Light cyan
-        '#FFE5F5', // Light magenta
-        '#F5FFE5', // Light lime
-        '#E5F5FF'  // Light sky blue
-    ];
-
-    return colors[Math.floor(Math.random() * colors.length)];
-}
 
 // Save activities to localStorage
 function saveActivities(activities) {

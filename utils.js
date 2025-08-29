@@ -19,26 +19,20 @@ function sanitizeInput(input) {
 
 // Generate random color function
 function getRandomColor() {
-    // Array of soft, pleasant colors in RGB format
+    // Array of gentle, harmonious colors in RGB format
     const colors = [
-        'rgb(248, 215, 218)', // soft red
-        'rgb(209, 231, 221)', // soft green
-        'rgb(207, 226, 255)', // soft blue
-        'rgb(255, 243, 205)', // soft yellow
-        'rgb(226, 227, 229)', // soft gray
-        'rgb(216, 243, 220)', // mint
-        'rgb(255, 221, 210)', // peach
-        'rgb(221, 214, 254)', // lavender
-        'rgb(189, 224, 254)', // light blue
-        'rgb(255, 175, 204)', // pink
-        'rgb(200, 182, 255)', // purple
-        'rgb(253, 255, 182)', // light yellow
-        'rgb(202, 255, 191)', // light green
-        'rgb(155, 246, 255)', // cyan
-        'rgb(255, 198, 255)', // magenta
-        'rgb(237, 224, 212)', // tan
-        'rgb(233, 236, 239)', // light gray
-        'rgb(248, 237, 235)', // cream
+        'rgb(250, 235, 235)', // very soft rose
+        'rgb(235, 245, 235)', // very soft mint
+        'rgb(235, 240, 250)', // very soft blue
+        'rgb(250, 248, 235)', // very soft cream
+        'rgb(245, 235, 250)', // very soft lavender
+        'rgb(248, 250, 235)', // very soft lime
+        'rgb(235, 248, 245)', // very soft teal
+        'rgb(248, 235, 240)', // very soft pink
+        'rgb(240, 245, 250)', // very soft sky
+        'rgb(245, 248, 235)', // very soft sage
+        'rgb(250, 245, 240)', // very soft peach
+        'rgb(240, 235, 245)', // very soft mauve
     ];
     
     // Return a random color from the array

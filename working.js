@@ -29,7 +29,6 @@ function addWorkingLink(url) {
         id: Date.now(),
         url: sanitizedUrl,
         title: 'Loading...',
-        favicon: null,
         timestamp: new Date().toISOString()
     };
     
@@ -61,9 +60,6 @@ async function fetchLinkMetadata(linkId, url) {
         const urlObj = new URL(url);
         const domain = urlObj.hostname;
         
-        // Get favicon URL using Google's favicon service
-        const faviconUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=16`;
-        
         // Use domain as title (we can't fetch page title due to CORS)
         let title = domain;
         
@@ -76,7 +72,7 @@ async function fetchLinkMetadata(linkId, url) {
         title = title.charAt(0).toUpperCase() + title.slice(1);
         
         // Update immediately with available data
-        updateWorkingLinkMetadata(linkId, title, faviconUrl);
+        updateWorkingLinkMetadata(linkId, title);
         
     } catch (error) {
         console.error('Error processing link metadata:', error);
@@ -84,8 +80,7 @@ async function fetchLinkMetadata(linkId, url) {
         try {
             const urlObj = new URL(url);
             const fallbackTitle = urlObj.hostname.replace('www.', '');
-            const fallbackFavicon = `https://www.google.com/s2/favicons?domain=${urlObj.hostname}&sz=16`;
-            updateWorkingLinkMetadata(linkId, fallbackTitle, fallbackFavicon);
+            updateWorkingLinkMetadata(linkId, fallbackTitle);
         } catch (fallbackError) {
             // If URL parsing fails, use the URL itself as title
             updateWorkingLinkMetadata(linkId, url, null);
@@ -94,13 +89,12 @@ async function fetchLinkMetadata(linkId, url) {
 }
 
 // Update working link metadata
-function updateWorkingLinkMetadata(linkId, title, faviconUrl) {
+function updateWorkingLinkMetadata(linkId, title) {
     const workingLinks = getWorkingLinksFromStorage();
     const linkIndex = workingLinks.findIndex(link => link.id === linkId);
     
     if (linkIndex !== -1) {
         workingLinks[linkIndex].title = title;
-        workingLinks[linkIndex].favicon = faviconUrl;
         
         // Save updated data
         safeLocalStorageOperation('set', 'workingLinks', JSON.stringify(workingLinks));
@@ -189,14 +183,7 @@ function createWorkingLinkElement(workingLink) {
     faviconElement.alt = '';
     faviconElement.setAttribute('aria-hidden', 'true');
     
-    if (workingLink.favicon) {
-        faviconElement.src = workingLink.favicon;
-        faviconElement.onerror = function() {
-            this.style.display = 'none';
-        };
-    } else {
-        faviconElement.style.display = 'none';
-    }
+    faviconElement.style.display = 'none';
     
     // Create title/url container
     const textContainer = document.createElement('div');
@@ -442,10 +429,6 @@ function validateWorkingLinksData() {
                     title = title.charAt(0).toUpperCase() + title.slice(1);
                     link.title = title;
                 }
-                if (!link.hasOwnProperty('favicon')) {
-                    const urlObj = new URL(link.url);
-                    link.favicon = `https://www.google.com/s2/favicons?domain=${urlObj.hostname}&sz=16`;
-                }
                 if (!link.hasOwnProperty('timestamp')) {
                     link.timestamp = new Date().toISOString();
                 }
@@ -511,7 +494,7 @@ function refreshAllMetadata() {
     let updated = false;
     
     workingLinks.forEach(link => {
-        if (link.title === 'Loading...' || !link.title || !link.favicon) {
+        if (link.title === 'Loading...' || !link.title) {
             try {
                 const urlObj = new URL(link.url);
                 let title = urlObj.hostname;
@@ -520,12 +503,10 @@ function refreshAllMetadata() {
                 }
                 title = title.charAt(0).toUpperCase() + title.slice(1);
                 link.title = title;
-                link.favicon = `https://www.google.com/s2/favicons?domain=${urlObj.hostname}&sz=16`;
                 updated = true;
             } catch (error) {
                 console.error('Error updating metadata for link:', link.url);
                 link.title = link.url;
-                link.favicon = null;
             }
         }
     });

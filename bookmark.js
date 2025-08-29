@@ -97,109 +97,116 @@ function deleteBookmark(id) {
     }
 }
 
-// Export bookmarks function with enhanced working links support
-function exportBookmarks() {
-    try {
+// Create export data object - shared by export and sync functions
+function createExportData() {
     const bookmarks = getBookmarksFromStorage();
     const note = window.Notes ? window.Notes.getNoteFromStorage() : null;
     const tasks = window.Tasks ? window.Tasks.getTasksFromStorage() : [];
         
-        // Enhanced sticky notes data retrieval with error handling
+    // Enhanced sticky notes data retrieval with error handling
     let stickyNotes = [];
-        try {
-    if (window.Sticky && window.Sticky.getStickyNotesFromStorage) {
-        stickyNotes = window.Sticky.getStickyNotesFromStorage();
-    } else {
-                const stickyData = safeLocalStorageOperation('get', 'stickyNotes');
-        stickyNotes = stickyData ? JSON.parse(stickyData) : [];
-            }
-        } catch (error) {
-            console.warn('Error retrieving sticky notes for export:', error);
-            stickyNotes = [];
+    try {
+        if (window.Sticky && window.Sticky.getStickyNotesFromStorage) {
+            stickyNotes = window.Sticky.getStickyNotesFromStorage();
+        } else {
+            const stickyData = safeLocalStorageOperation('get', 'stickyNotes');
+            stickyNotes = stickyData ? JSON.parse(stickyData) : [];
+        }
+    } catch (error) {
+        console.warn('Error retrieving sticky notes for export:', error);
+        stickyNotes = [];
     }
     
-        // Enhanced working links data retrieval with validation
+    // Enhanced working links data retrieval with validation
     let workingLinks = [];
-        try {
-    if (window.Working && window.Working.getWorkingLinksFromStorage) {
-        workingLinks = window.Working.getWorkingLinksFromStorage();
-    } else {
-                const workingData = safeLocalStorageOperation('get', 'workingLinks');
-        workingLinks = workingData ? JSON.parse(workingData) : [];
+    try {
+        if (window.Working && window.Working.getWorkingLinksFromStorage) {
+            workingLinks = window.Working.getWorkingLinksFromStorage();
+        } else {
+            const workingData = safeLocalStorageOperation('get', 'workingLinks');
+            workingLinks = workingData ? JSON.parse(workingData) : [];
+        }
+        
+        // Validate working links data structure
+        workingLinks = workingLinks.filter(link => 
+            link && 
+            typeof link === 'object' && 
+            link.id && 
+            link.url && 
+            typeof link.url === 'string' &&
+            link.url.trim() !== ''
+        );
+    } catch (error) {
+        console.warn('Error retrieving working links for export:', error);
+        workingLinks = [];
     }
-    
-            // Validate working links data structure
-            workingLinks = workingLinks.filter(link => 
-                link && 
-                typeof link === 'object' && 
-                link.id && 
-                link.url && 
-                typeof link.url === 'string' &&
-                link.url.trim() !== ''
-            );
-        } catch (error) {
-            console.warn('Error retrieving working links for export:', error);
-            workingLinks = [];
+
+    // Enhanced timeline data retrieval
+    let timelineActivities = [];
+    try {
+        if (window.TimelineTracker && window.TimelineTracker.getTimelineActivities) {
+            timelineActivities = window.TimelineTracker.getTimelineActivities();
+        } else {
+            const timelineData = safeLocalStorageOperation('get', 'company-timeline-activities');
+            timelineActivities = timelineData ? JSON.parse(timelineData) : [];
         }
 
-        // Enhanced timeline data retrieval
-        let timelineActivities = [];
-        try {
-            if (window.TimelineTracker && window.TimelineTracker.getTimelineActivities) {
-                timelineActivities = window.TimelineTracker.getTimelineActivities();
-            } else {
-                const timelineData = safeLocalStorageOperation('get', 'company-timeline-activities');
-                timelineActivities = timelineData ? JSON.parse(timelineData) : [];
-            }
+        // Validate timeline data structure
+        timelineActivities = timelineActivities.filter(activity =>
+            activity &&
+            typeof activity === 'object' &&
+            activity.id &&
+            activity.date &&
+            activity.activity &&
+            activity.desc
+        );
+    } catch (error) {
+        console.warn('Error retrieving timeline activities for export:', error);
+        timelineActivities = [];
+    }
 
-            // Validate timeline data structure
-            timelineActivities = timelineActivities.filter(activity =>
-                activity &&
-                typeof activity === 'object' &&
-                activity.id &&
-                activity.date &&
-                activity.activity &&
-                activity.desc
-            );
-        } catch (error) {
-            console.warn('Error retrieving timeline activities for export:', error);
-            timelineActivities = [];
-        }
+    // Create comprehensive export data object
+    const exportData = {
+        version: '2.2', // Updated version for working links title/favicon support
+        exportDate: new Date().toISOString(),
+        bookmarks: bookmarks || [],
+        note: note || null,
+        tasks: tasks || [],
+        stickyNotes: stickyNotes || [],
+        workingLinks: workingLinks || [],
+        timelineActivities: timelineActivities || []
+    };
+
+    // Add metadata for better import handling
+    exportData.metadata = {
+        bookmarkCount: exportData.bookmarks.length,
+        taskCount: exportData.tasks.length,
+        stickyNoteCount: exportData.stickyNotes.length,
+        workingLinkCount: exportData.workingLinks.length,
+        timelineActivityCount: exportData.timelineActivities.length,
+        hasNote: !!exportData.note
+    };
+
+    return exportData;
+}
+
+// Export bookmarks function with enhanced working links support
+function exportBookmarks() {
+    try {
+        const exportData = createExportData();
 
         // Check if there's any data to export
-        const hasBookmarks = bookmarks && bookmarks.length > 0;
-        const hasNote = note && note.content && note.content.trim() !== '';
-        const hasTasks = tasks && tasks.length > 0;
-        const hasStickyNotes = stickyNotes && stickyNotes.length > 0;
-        const hasWorkingLinks = workingLinks && workingLinks.length > 0;
-        const hasTimelineActivities = timelineActivities && timelineActivities.length > 0;
+        const hasBookmarks = exportData.bookmarks && exportData.bookmarks.length > 0;
+        const hasNote = exportData.note && exportData.note.content && exportData.note.content.trim() !== '';
+        const hasTasks = exportData.tasks && exportData.tasks.length > 0;
+        const hasStickyNotes = exportData.stickyNotes && exportData.stickyNotes.length > 0;
+        const hasWorkingLinks = exportData.workingLinks && exportData.workingLinks.length > 0;
+        const hasTimelineActivities = exportData.timelineActivities && exportData.timelineActivities.length > 0;
 
         if (!hasBookmarks && !hasNote && !hasTasks && !hasStickyNotes && !hasWorkingLinks && !hasTimelineActivities) {
-        showMessage('No data to export', 'error');
-        return;
-    }
-    
-        // Create comprehensive export data object
-    const exportData = {
-            version: '2.2', // Updated version for working links title/favicon support
-            exportDate: new Date().toISOString(),
-            bookmarks: bookmarks || [],
-            note: note || null,
-            tasks: tasks || [],
-            stickyNotes: stickyNotes || [],
-            workingLinks: workingLinks || [],
-            timelineActivities: timelineActivities || []
-        };
-
-        // Add metadata for better import handling
-        exportData.metadata = {
-            bookmarkCount: exportData.bookmarks.length,
-            taskCount: exportData.tasks.length,
-            stickyNoteCount: exportData.stickyNotes.length,
-            workingLinkCount: exportData.workingLinks.length,
-            timelineActivityCount: exportData.timelineActivities.length,
-            hasNote: !!exportData.note
-        };
+            showMessage('No data to export', 'error');
+            return;
+        }
         
         // Create a formatted JSON blob
     const exportDataJson = JSON.stringify(exportData, null, 2);
@@ -279,7 +286,6 @@ function importBookmarks(e) {
                 Sticky: !!window.Sticky,
                 Working: !!window.Working
             });
-            let importSummary = [];
             
             // Handle different formats
             if (Array.isArray(importedData)) {
@@ -299,10 +305,9 @@ function importBookmarks(e) {
                     const success = safeLocalStorageOperation('set', 'bookmarks', JSON.stringify(legacyBookmarks));
                     if (success === true) {
                         setTimeout(() => loadBookmarks(), 50);
-                        importSummary.push(`${legacyBookmarks.length} bookmarks`);
                     }
                 }
-                showMessage(`Legacy format imported: ${importSummary.join(', ')}`, 'success');
+                showMessage('Legacy format imported successfully!', 'success');
                 
             } else if (importedData && typeof importedData === 'object') {
                 // Enhanced format with validation
@@ -340,7 +345,6 @@ function importBookmarks(e) {
                                 const savedBookmarks = getBookmarksFromStorage();
                                 console.log('Bookmarks in storage after import:', savedBookmarks.length);
                             }, 50);
-                            importSummary.push(`${validBookmarks.length} bookmarks`);
                         } else {
                             console.error('Failed to save bookmarks to localStorage');
                         }
@@ -355,7 +359,6 @@ function importBookmarks(e) {
                     const success = safeLocalStorageOperation('set', 'note', JSON.stringify(importedData.note));
                     if (success === true && window.Notes && window.Notes.initializeNote) {
                         setTimeout(() => window.Notes.initializeNote(), 50);
-                        importSummary.push('1 note');
                     } else if (success !== true) {
                         console.error('Failed to save note to localStorage');
                     }
@@ -379,7 +382,6 @@ function importBookmarks(e) {
                         const success = safeLocalStorageOperation('set', 'tasks', JSON.stringify(validTasks));
                         if (success === true && window.Tasks && window.Tasks.loadTasks) {
                             setTimeout(() => window.Tasks.loadTasks(), 100);
-                            importSummary.push(`${validTasks.length} tasks`);
                         } else if (success !== true) {
                             console.error('Failed to save tasks to localStorage');
                         }
@@ -404,7 +406,6 @@ function importBookmarks(e) {
                         const success = safeLocalStorageOperation('set', 'stickyNotes', JSON.stringify(validStickyNotes));
                         if (success === true && window.Sticky && window.Sticky.displayStickyNotes) {
                             setTimeout(() => window.Sticky.displayStickyNotes(), 150);
-                            importSummary.push(`${validStickyNotes.length} sticky notes`);
                         } else if (success !== true) {
                             console.error('Failed to save sticky notes to localStorage');
                         }
@@ -436,7 +437,6 @@ function importBookmarks(e) {
                         id: link.id || Date.now() + Math.random(), // Ensure unique ID
                         url: link.url.trim(),
                         title: link.title || new URL(link.url.trim()).hostname.replace('www.', '').charAt(0).toUpperCase() + new URL(link.url.trim()).hostname.replace('www.', '').slice(1),
-                        favicon: link.favicon || `https://www.google.com/s2/favicons?domain=${new URL(link.url.trim()).hostname}&sz=16`,
                         timestamp: link.timestamp || new Date().toISOString()
                     }));
                     
@@ -451,7 +451,6 @@ function importBookmarks(e) {
                                 }
                                 window.Working.loadWorkingLinks();
                             }, 200);
-                            importSummary.push(`${validWorkingLinks.length} working links`);
                         } else if (success !== true) {
                             console.error('Failed to save working links to localStorage');
                         }
@@ -485,7 +484,6 @@ function importBookmarks(e) {
                     if (validTimelineActivities.length > 0) {
                         const success = safeLocalStorageOperation('set', 'company-timeline-activities', JSON.stringify(validTimelineActivities));
                         if (success === true) {
-                            importSummary.push(`${validTimelineActivities.length} timeline activities`);
                         } else {
                             console.error('Failed to save timeline activities to localStorage');
                         }
@@ -494,11 +492,7 @@ function importBookmarks(e) {
                     console.log('Timeline activities data exists but is not a valid array:', typeof importedData.timelineActivities);
                 }
 
-                if (importSummary.length > 0) {
-                    showMessage(`Import successful! Imported: ${importSummary.join(', ')}`, 'success');
-                } else {
-                    showMessage('No valid data found to import', 'warning');
-                }
+                showMessage('Import successful!', 'success');
                 
             } else {
                 throw new Error('Invalid file format');
@@ -829,6 +823,15 @@ function setupBookmarkEventListeners() {
     // Export bookmarks
     window.UI.elements.exportBookmarksBtn.addEventListener('click', exportBookmarks);
     
+    // Sync bookmarks
+    window.UI.elements.syncBookmarksBtn.addEventListener('click', () => {
+        if (window.ApiHelper && window.ApiHelper.syncToCloud) {
+            window.ApiHelper.syncToCloud();
+        } else {
+            showMessage('Sync functionality not available', 'error');
+        }
+    });
+    
     // Import bookmarks button click
     window.UI.elements.importBookmarksBtn.addEventListener('click', () => {
         window.UI.elements.importFileInput.click();
@@ -855,6 +858,7 @@ if (typeof window !== 'undefined') {
         importBookmarks,
         restoreDefault,
         getBookmarksFromStorage,
-        createBookmarkElement
+        createBookmarkElement,
+        createExportData
     };
 }

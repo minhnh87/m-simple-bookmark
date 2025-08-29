@@ -12,6 +12,7 @@ const addFormContainer = document.getElementById('add-form');
 const notesList = document.getElementById('notes-list');
 const restoreDefaultBtn = document.getElementById('restore-default');
 const exportBookmarksBtn = document.getElementById('export-bookmarks');
+const syncBookmarksBtn = document.getElementById('sync-bookmarks');
 const importBookmarksBtn = document.getElementById('import-bookmarks');
 const importFileInput = document.getElementById('import-file');
 const gridViewBtn = document.getElementById('grid-view');
@@ -379,6 +380,7 @@ if (typeof window !== 'undefined') {
             notesList,
             restoreDefaultBtn,
             exportBookmarksBtn,
+            syncBookmarksBtn,
             importBookmarksBtn,
             importFileInput,
             tasksList,

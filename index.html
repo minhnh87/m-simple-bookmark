@@ -44,6 +44,10 @@
                                 <i class="fas fa-file-export" aria-hidden="true"></i> Export
                                 <span class="tooltip-text">Export all bookmarks, notes and tasks</span>
                             </button>
+                            <button id="sync-bookmarks" class="control-button tooltip" aria-label="Sync data to cloud">
+                                <i class="fas fa-cloud-upload-alt" aria-hidden="true"></i> Sync
+                                <span class="tooltip-text">Sync data to cloud</span>
+                            </button>
                             <button id="import-bookmarks" class="control-button tooltip" aria-label="Import bookmarks, notes and tasks from a file">
                                 <i class="fas fa-file-import" aria-hidden="true"></i> Import
                                 <span class="tooltip-text">Import bookmarks, notes and tasks from a file</span>
@@ -120,6 +124,7 @@
 
     <script src="utils.js"></script>
     <script src="ui.js"></script>
+    <script src="api-helper.js"></script>
     <script src="bookmark.js"></script>
     <script src="note.js"></script>
     <script src="task.js"></script>
@@ -127,13 +132,45 @@
     <script src="working.js"></script>
     <script>
         // Initialize all modules when DOM is loaded
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             window.UI.initializeUI();
+            
+            // Try to load data from cloud first
+            let cloudDataLoaded = false;
+            if (window.ApiHelper && window.ApiHelper.initializeFromCloud) {
+                try {
+                    cloudDataLoaded = await window.ApiHelper.initializeFromCloud();
+                } catch (error) {
+                    console.error('Failed to load from cloud:', error);
+                }
+            }
+            
+            // Initialize all modules
             window.Bookmarks.initializeBookmarks();
             window.Notes.initializeNote();
             window.Tasks.initializeTasks();
             window.Sticky.initializeSticky();
             window.Working.initializeWorking();
+            
+            // If cloud data was loaded, refresh all modules to show the new data
+            if (cloudDataLoaded) {
+                setTimeout(() => {
+                    // Reload all modules to display cloud data
+                    window.Bookmarks.loadBookmarks();
+                    if (window.Notes && window.Notes.initializeNote) {
+                        window.Notes.initializeNote();
+                    }
+                    if (window.Tasks && window.Tasks.loadTasks) {
+                        window.Tasks.loadTasks();
+                    }
+                    if (window.Sticky && window.Sticky.displayStickyNotes) {
+                        window.Sticky.displayStickyNotes();
+                    }
+                    if (window.Working && window.Working.loadWorkingLinks) {
+                        window.Working.loadWorkingLinks();
+                    }
+                }, 100);
+            }
         });
     </script>
 </body>
