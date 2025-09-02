@@ -208,12 +208,29 @@ async function initializeFromCloud() {
                 } catch {
                     return false;
                 }
-            }).map(link => ({
-                id: link.id || Date.now() + Math.random(),
-                url: link.url.trim(),
-                title: link.title || new URL(link.url.trim()).hostname.replace('www.', '').charAt(0).toUpperCase() + new URL(link.url.trim()).hostname.replace('www.', '').slice(1),
-                timestamp: link.timestamp || new Date().toISOString()
-            }));
+            }).map(link => {
+                const trimmedUrl = link.url.trim();
+                let generatedTitle = link.title;
+                
+                // Generate title if not provided
+                if (!generatedTitle) {
+                    try {
+                        const urlObj = new URL(trimmedUrl);
+                        let hostname = urlObj.hostname.replace('www.', '');
+                        generatedTitle = hostname.charAt(0).toUpperCase() + hostname.slice(1);
+                    } catch (error) {
+                        console.warn('Failed to generate title for URL:', trimmedUrl);
+                        generatedTitle = trimmedUrl; // Fallback to URL itself
+                    }
+                }
+                
+                return {
+                    id: link.id || Date.now() + Math.random(),
+                    url: trimmedUrl,
+                    title: generatedTitle,
+                    timestamp: link.timestamp || new Date().toISOString()
+                };
+            });
             
             if (validWorkingLinks.length > 0) {
                 const success = safeLocalStorageOperation('set', 'workingLinks', JSON.stringify(validWorkingLinks));
