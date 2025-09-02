@@ -38,14 +38,104 @@ body {
 .app-container {
     display: flex;
     gap: 1px;
-    max-width: 1400px;
+    max-width: 1500px;
     margin: 0 auto;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
 }
+
+/* Left Sidebar */
+.left-sidebar {
+    width: 70px;
+    min-width: 70px;
+    background-color: white;
+    box-shadow: var(--shadow);
+    padding: 10px 5px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+/* Sidebar Navigation */
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.sidebar-nav-button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: transparent;
+    border: 2px solid transparent;
+    padding: 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: var(--transition);
+    color: var(--secondary-color);
+    min-height: 60px;
+}
+
+.sidebar-nav-button i {
+    font-size: 18px;
+    margin-bottom: 4px;
+}
+
+.sidebar-nav-button .nav-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.sidebar-nav-button:hover {
+    background-color: var(--light-gray);
+    border-color: var(--accent-color);
+}
+
+.sidebar-nav-button.active {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+/* Sidebar Controls */
+.sidebar-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.sidebar-control-button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--secondary-color);
+    color: white;
+    border: none;
+    padding: 10px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: var(--transition);
+    min-height: 50px;
+    position: relative;
+}
+
+.sidebar-control-button i {
+    font-size: 16px;
+}
+
+.sidebar-control-button:hover {
+    background-color: var(--primary-color);
+}
+
 
 .container {
     flex: 1;
-    min-width: 300px;
+    min-width: 250px;
     background-color: white;
     box-shadow: var(--shadow);
     padding: 10px;
@@ -55,8 +145,8 @@ body {
 
 .notes-container {
     flex: 1;
-    max-width: 600px;
-    min-width: 300px;
+    max-width: 700px;
+    min-width: 250px;
     background-color: white;
     box-shadow: var(--shadow);
     padding: 10px;
@@ -561,20 +651,9 @@ button:hover {
     background-color: rgb(234 247 236);
 }
 
+/* Bookmark controls moved to sidebar */
 .bookmark-controls {
-    display: flex;
-    gap: 6px;
-    margin-top: auto;
-    padding: 8px;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: center;
-    background-color: #f8f9fa;
-    border-top: 1px solid #e9ecef;
-    border-radius: 0 0 4px 4px;
-    position: relative;
-    bottom: auto;
-    width: auto;
+    display: none;
 }
 
 .control-button {
@@ -670,6 +749,27 @@ button:hover {
     .app-container {
         flex-direction: column;
         gap: 10px;
+        flex-wrap: wrap;
+    }
+    
+    .left-sidebar {
+        order: -1;
+        width: 100%;
+        min-height: auto;
+        flex-direction: row;
+        justify-content: space-between;
+        padding: 10px;
+    }
+    
+    .sidebar-nav {
+        flex-direction: row;
+        margin-bottom: 0;
+        gap: 10px;
+    }
+    
+    .sidebar-controls {
+        flex-direction: row;
+        gap: 10px;
     }
     
     .container, .notes-container {
@@ -700,17 +800,32 @@ button:hover {
         justify-content: center;
     }
     
-    .bookmark-controls {
-        flex-wrap: wrap;
-        gap: 8px;
-        justify-content: space-around;
+    .left-sidebar {
+        width: 80px;
+        min-width: 80px;
+        padding: 8px 4px;
     }
     
-    .control-button {
-        font-size: 12px;
-        padding: 8px 12px;
-        flex: 1;
-        min-width: 80px;
+    .sidebar-nav-button {
+        min-height: 50px;
+        padding: 8px 4px;
+    }
+    
+    .sidebar-nav-button i {
+        font-size: 16px;
+    }
+    
+    .sidebar-nav-button .nav-label {
+        font-size: 9px;
+    }
+    
+    .sidebar-control-button {
+        min-height: 40px;
+        padding: 8px 4px;
+    }
+    
+    .sidebar-control-button i {
+        font-size: 14px;
     }
     
     .tab-buttons {
@@ -1085,7 +1200,7 @@ button:hover {
 .bookmark-tab-content {
     display: none;
     position: relative;
-    height: calc(100vh - 55px);
+    height: calc(100vh - 20px);
     flex-direction: column;
 }
 

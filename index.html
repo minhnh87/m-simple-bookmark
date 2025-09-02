@@ -9,13 +9,40 @@
 </head>
 <body>
     <div class="app-container">
+        <!-- Left Sidebar -->
+        <div class="left-sidebar">
+            <!-- Tab Navigation Buttons -->
+            <div class="sidebar-nav" role="tablist" aria-label="Bookmark navigation">
+                <button id="bookmarks-tab" class="sidebar-nav-button active" role="tab" aria-selected="true" aria-controls="bookmarks-content">
+                    <i class="fas fa-bookmark" aria-hidden="true"></i>
+                    <span class="nav-label">BM</span>
+                </button>
+                <button id="working-bookmark-tab" class="sidebar-nav-button" role="tab" aria-selected="false" aria-controls="working-bookmark-content">
+                    <i class="fas fa-link" aria-hidden="true"></i>
+                    <span class="nav-label">WK</span>
+                </button>
+            </div>
+            
+            <!-- Control Buttons -->
+            <div class="sidebar-controls">
+                <button id="restore-default" class="sidebar-control-button" aria-label="Restore default bookmarks and clear all data">
+                    <i class="fas fa-undo" aria-hidden="true"></i>
+                </button>
+                <button id="export-bookmarks" class="sidebar-control-button" aria-label="Export all bookmarks, notes and tasks">
+                    <i class="fas fa-file-export" aria-hidden="true"></i>
+                </button>
+                <button id="sync-bookmarks" class="sidebar-control-button" aria-label="Sync data to cloud">
+                    <i class="fas fa-cloud-upload-alt" aria-hidden="true"></i>
+                </button>
+                <button id="import-bookmarks" class="sidebar-control-button" aria-label="Import bookmarks, notes and tasks from a file">
+                    <i class="fas fa-file-import" aria-hidden="true"></i>
+                </button>
+                <input type="file" id="import-file" accept=".json" style="display: none;">
+            </div>
+        </div>
+        
         <div class="container">
             <div class="bookmarks-container">
-                <div class="bookmark-tabs-container">
-                    <div class="bookmark-tab-buttons" role="tablist" aria-label="Bookmark navigation">
-                        <button id="bookmarks-tab" class="bookmark-tab-button active" role="tab" aria-selected="true" aria-controls="bookmarks-content">Bookmarks</button>
-                        <button id="working-bookmark-tab" class="bookmark-tab-button" role="tab" aria-selected="false" aria-controls="working-bookmark-content">Working</button>
-                    </div>
                     <div id="bookmarks-content" class="bookmark-tab-content active" role="tabpanel" aria-labelledby="bookmarks-tab">
                         <!-- Bookmarks Header with View Toggle -->
                         <div class="bookmarks-header">
@@ -33,27 +60,6 @@
                         </div>
                         
                         <div id="bookmarks-list" role="grid" aria-label="Bookmarks collection"></div>
-                        
-                        <!-- Data Management Controls -->
-                        <div class="bookmark-controls">
-                            <button id="restore-default" class="control-button tooltip" aria-label="Restore default bookmarks and clear all data">
-                                <i class="fas fa-undo" aria-hidden="true"></i> Default
-                                <span class="tooltip-text">Restore default bookmarks and clear all data</span>
-                            </button>
-                            <button id="export-bookmarks" class="control-button tooltip" aria-label="Export all bookmarks, notes and tasks">
-                                <i class="fas fa-file-export" aria-hidden="true"></i> Export
-                                <span class="tooltip-text">Export all bookmarks, notes and tasks</span>
-                            </button>
-                            <button id="sync-bookmarks" class="control-button tooltip" aria-label="Sync data to cloud">
-                                <i class="fas fa-cloud-upload-alt" aria-hidden="true"></i> Sync
-                                <span class="tooltip-text">Sync data to cloud</span>
-                            </button>
-                            <button id="import-bookmarks" class="control-button tooltip" aria-label="Import bookmarks, notes and tasks from a file">
-                                <i class="fas fa-file-import" aria-hidden="true"></i> Import
-                                <span class="tooltip-text">Import bookmarks, notes and tasks from a file</span>
-                            </button>
-                            <input type="file" id="import-file" accept=".json" style="display: none;">
-                        </div>
                     </div>
                     <div id="working-bookmark-content" class="bookmark-tab-content" role="tabpanel" aria-labelledby="working-bookmark-tab">
                         <div class="working-input-container">
@@ -65,7 +71,6 @@
                         <div id="working-bookmark-list" role="list" aria-label="Working links list"></div>
                     </div>
                 </div>
-            </div>
         </div>
 
         <div class="notes-container">
