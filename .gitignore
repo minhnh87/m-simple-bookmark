@@ -6,3 +6,5 @@ sessions/
 CLAUDE.md
 settings.local.json
 .DS_Store
+.nova/
+.playwright-mcp/
