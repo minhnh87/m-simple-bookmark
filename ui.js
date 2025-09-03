@@ -13,6 +13,7 @@ const notesList = document.getElementById('notes-list');
 const restoreDefaultBtn = document.getElementById('restore-default');
 const exportBookmarksBtn = document.getElementById('export-bookmarks');
 const syncBookmarksBtn = document.getElementById('sync-bookmarks');
+const loadFromCloudBtn = document.getElementById('load-from-cloud');
 const importBookmarksBtn = document.getElementById('import-bookmarks');
 const importFileInput = document.getElementById('import-file');
 const gridViewBtn = document.getElementById('grid-view');
@@ -381,6 +382,7 @@ if (typeof window !== 'undefined') {
             restoreDefaultBtn,
             exportBookmarksBtn,
             syncBookmarksBtn,
+            loadFromCloudBtn,
             importBookmarksBtn,
             importFileInput,
             tasksList,

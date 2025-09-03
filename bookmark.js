@@ -832,6 +832,44 @@ function setupBookmarkEventListeners() {
         }
     });
     
+    // Load from cloud button
+    window.UI.elements.loadFromCloudBtn.addEventListener('click', async () => {
+        if (window.ApiHelper && window.ApiHelper.loadAndOverwriteFromCloud) {
+            // Confirm with user before overwriting local data
+            const confirmLoad = confirm('This will load data from cloud and overwrite your local data. Are you sure you want to continue?');
+            
+            if (confirmLoad) {
+                try {
+                    const success = await window.ApiHelper.loadAndOverwriteFromCloud();
+                    
+                    if (success) {
+                        // Reload all modules to display the new data
+                        setTimeout(() => {
+                            window.Bookmarks.loadBookmarks();
+                            if (window.Notes && window.Notes.initializeNote) {
+                                window.Notes.initializeNote();
+                            }
+                            if (window.Tasks && window.Tasks.loadTasks) {
+                                window.Tasks.loadTasks();
+                            }
+                            if (window.Sticky && window.Sticky.displayStickyNotes) {
+                                window.Sticky.displayStickyNotes();
+                            }
+                            if (window.Working && window.Working.loadWorkingLinks) {
+                                window.Working.loadWorkingLinks();
+                            }
+                        }, 100);
+                    }
+                } catch (error) {
+                    console.error('Failed to load from cloud:', error);
+                    showMessage('Failed to load from cloud', 'error');
+                }
+            }
+        } else {
+            showMessage('Load from cloud functionality not available', 'error');
+        }
+    });
+    
     // Import bookmarks button click
     window.UI.elements.importBookmarksBtn.addEventListener('click', () => {
         window.UI.elements.importFileInput.click();

@@ -38,6 +38,9 @@
                 <button id="sync-bookmarks" class="sidebar-control-button" aria-label="Sync data to cloud">
                     <i class="fas fa-cloud-upload-alt" aria-hidden="true"></i>
                 </button>
+                <button id="load-from-cloud" class="sidebar-control-button" aria-label="Load data from cloud and overwrite local storage">
+                    <i class="fas fa-cloud-download-alt" aria-hidden="true"></i>Load from Cloud
+                </button>
                 <input type="file" id="import-file" accept=".json" style="display: none;">
             </div>
         </div>
@@ -141,42 +144,12 @@
         document.addEventListener('DOMContentLoaded', async () => {
             window.UI.initializeUI();
             
-            // Try to load data from cloud first
-            let cloudDataLoaded = false;
-            if (window.ApiHelper && window.ApiHelper.initializeFromCloud) {
-                try {
-                    cloudDataLoaded = await window.ApiHelper.initializeFromCloud();
-                } catch (error) {
-                    console.error('Failed to load from cloud:', error);
-                }
-            }
-            
-            // Initialize all modules
+            // Initialize all modules from local storage only
             window.Bookmarks.initializeBookmarks();
             window.Notes.initializeNote();
             window.Tasks.initializeTasks();
             window.Sticky.initializeSticky();
             window.Working.initializeWorking();
-            
-            // If cloud data was loaded, refresh all modules to show the new data
-            if (cloudDataLoaded) {
-                setTimeout(() => {
-                    // Reload all modules to display cloud data
-                    window.Bookmarks.loadBookmarks();
-                    if (window.Notes && window.Notes.initializeNote) {
-                        window.Notes.initializeNote();
-                    }
-                    if (window.Tasks && window.Tasks.loadTasks) {
-                        window.Tasks.loadTasks();
-                    }
-                    if (window.Sticky && window.Sticky.displayStickyNotes) {
-                        window.Sticky.displayStickyNotes();
-                    }
-                    if (window.Working && window.Working.loadWorkingLinks) {
-                        window.Working.loadWorkingLinks();
-                    }
-                }, 100);
-            }
         });
     </script>
 </body>

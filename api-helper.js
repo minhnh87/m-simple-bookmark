@@ -114,10 +114,10 @@ async function syncToCloud() {
 }
 
 /**
- * Initialize app with data from cloud API
+ * Load data from cloud and overwrite local storage (with user confirmation)
  * @returns {Promise<boolean>} - Success status
  */
-async function initializeFromCloud() {
+async function loadAndOverwriteFromCloud() {
     try {
         const cloudData = await loadFromApi();
         
@@ -278,6 +278,6 @@ if (typeof window !== 'undefined') {
         saveToApi,
         loadFromApi,
         syncToCloud,
-        initializeFromCloud
+        loadAndOverwriteFromCloud
     };
 }
