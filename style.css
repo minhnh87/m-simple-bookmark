@@ -351,10 +351,9 @@ button:hover {
 
 .bookmark-item {
     background-color: white;
-    padding: 8px;
+    padding: 1px 4px;
     border-radius: 4px;
     min-width: 170px;
-    height: 50px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -374,7 +373,7 @@ button:hover {
 .bookmark-info {
     display: flex;
     flex-direction: column;
-    width: 80%;
+    width: 86%;
     overflow: hidden;
     transition: var(--transition);
 }
@@ -386,7 +385,7 @@ button:hover {
 .bookmark-name {
     font-weight: 600;
     color: rgba(0, 0, 0, 0.8);
-    font-size: 14px;
+    font-size: 12px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -477,32 +476,78 @@ button:hover {
 
 .tab-buttons {
     display: flex;
-    border-bottom: 1px solid var(--light-gray);
-    margin-bottom: 15px;
+    border-bottom: 1px solid #d1d5db;
+    margin-bottom: 24px;
+    gap: 0;
 }
 
 .tab-button {
-    background-color: transparent;
-    color: var(--secondary-color);
+    background: transparent;
+    color: #57606a;
     border: none;
-    padding: 10px 20px;
+    padding: 8px 16px;
+    margin: 0;
     cursor: pointer;
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 500;
-    transition: var(--transition);
-    border-bottom: 2px solid transparent;
-    width: auto;
+    transition: all 0.2s ease;
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    line-height: 20px;
+    white-space: nowrap;
+}
+
+.tab-button::before {
+    content: '';
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+}
+
+/* Icon styles for each tab */
+#notes-tab::before {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2357606a'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'%3E%3C/path%3E%3C/svg%3E");
+}
+
+#sticky-tab::before {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2357606a'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z'%3E%3C/path%3E%3C/svg%3E");
+}
+
+#tasks-tab::before {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2357606a'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4'%3E%3C/path%3E%3C/svg%3E");
 }
 
 .tab-button:hover {
-    background-color: transparent;
-    color: var(--primary-color);
+    color: #24292f;
+    background-color: rgba(208, 215, 222, 0.15);
 }
 
 .tab-button.active {
-    color: var(--primary-color);
-    border-bottom: 2px solid var(--accent-color);
-    background-color: transparent;
+    color: #24292f;
+    font-weight: 600;
+    border-bottom-color: #464646;
+    background: transparent;
+}
+
+.tab-button.active::before {
+    opacity: 1;
+}
+
+.tab-button.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: #999;
 }
 
 .tab-content {
