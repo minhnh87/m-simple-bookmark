@@ -81,12 +81,38 @@
             <div class="tabs-container">
                 <div class="tab-buttons" role="tablist" aria-label="Main navigation">
                     <button id="notes-tab" class="tab-button active" role="tab" aria-selected="true" aria-controls="notes-content">Notes</button>
+                    <button id="guides-tab" class="tab-button" role="tab" aria-selected="false" aria-controls="guides-content">Guides</button>
                     <button id="sticky-tab" class="tab-button" role="tab" aria-selected="false" aria-controls="sticky-content">Sticky</button>
                     <button id="tasks-tab" class="tab-button" role="tab" aria-selected="false" aria-controls="tasks-content">Tasks</button>
 
                 </div>
                 <div id="notes-content" class="tab-content active" role="tabpanel" aria-labelledby="notes-tab">
                     <div id="notes-list"></div>
+                </div>
+                <div id="guides-content" class="tab-content" role="tabpanel" aria-labelledby="guides-tab">
+                    <div id="guides-list-view" class="guides-view">
+                        <div class="guides-input-container">
+                            <input type="text" id="guides-input" placeholder="Add a new guide..." aria-label="New guide input">
+                        </div>
+                        <div id="guides-list" role="list" aria-label="Guides list"></div>
+                    </div>
+                    <div id="guides-content-view" class="guides-view" style="display: none;">
+                        <div class="guides-navigation">
+                            <button id="guides-back-btn" class="guide-nav-btn" title="Back to guides list">
+                                <i class="fas fa-arrow-left"></i> Back to Guides
+                            </button>
+                            <div class="guides-nav-info">
+                                <button id="guides-prev-btn" class="guide-nav-btn guide-nav-arrow" title="Previous guide">
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <span id="current-guide-title">Guide Title</span>
+                                <button id="guides-next-btn" class="guide-nav-btn guide-nav-arrow" title="Next guide">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div id="guides-content-container"></div>
+                    </div>
                 </div>
                 <div id="sticky-content" class="tab-content" role="tabpanel" aria-labelledby="sticky-tab">
                     <div class="sticky-input-container">
@@ -136,6 +162,7 @@
     <script src="api-helper.js"></script>
     <script src="bookmark.js"></script>
     <script src="note.js"></script>
+    <script src="guides.js"></script>
     <script src="task.js"></script>
     <script src="sticky.js"></script>
     <script src="working.js"></script>
@@ -147,6 +174,7 @@
             // Initialize all modules from local storage only
             window.Bookmarks.initializeBookmarks();
             window.Notes.initializeNote();
+            window.Guides.initializeGuides();
             window.Tasks.initializeTasks();
             window.Sticky.initializeSticky();
             window.Working.initializeWorking();

@@ -19,15 +19,19 @@ const importFileInput = document.getElementById('import-file');
 const gridViewBtn = document.getElementById('grid-view');
 const rowViewBtn = document.getElementById('row-view');
 const notesTab = document.getElementById('notes-tab');
+const guidesTab = document.getElementById('guides-tab');
 const tasksTab = document.getElementById('tasks-tab');
 const stickyTab = document.getElementById('sticky-tab');
 const notesContent = document.getElementById('notes-content');
+const guidesContent = document.getElementById('guides-content');
 const tasksContent = document.getElementById('tasks-content');
 const stickyContent = document.getElementById('sticky-content');
 const tasksList = document.getElementById('tasks-list');
 const taskInput = document.getElementById('task-input');
 const stickyList = document.getElementById('sticky-list');
 const stickyInput = document.getElementById('sticky-input');
+const guidesList = document.getElementById('guides-list');
+const guidesInput = document.getElementById('guides-input');
 // Bookmark tabs elements
 const bookmarksTab = document.getElementById('bookmarks-tab');
 const workingBookmarkTab = document.getElementById('working-bookmark-tab');
@@ -49,25 +53,29 @@ function initializeTabs() {
     notesTab.addEventListener('click', () => {
         switchTab('notes');
     });
-    
+
+    guidesTab.addEventListener('click', () => {
+        switchTab('guides');
+    });
+
     tasksTab.addEventListener('click', () => {
         switchTab('tasks');
     });
-    
+
     stickyTab.addEventListener('click', () => {
         switchTab('sticky');
     });
     
 
-    
+
     // Add keyboard navigation for tabs
-    [notesTab, tasksTab, stickyTab].forEach(tab => {
+    [notesTab, guidesTab, tasksTab, stickyTab].forEach(tab => {
         tab.addEventListener('keydown', (e) => {
             if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
                 e.preventDefault();
                 const currentTab = e.target;
-                const tabs = [notesTab, tasksTab, stickyTab];
-                const tabNames = ['notes', 'tasks', 'sticky'];
+                const tabs = [notesTab, guidesTab, tasksTab, stickyTab];
+                const tabNames = ['notes', 'guides', 'tasks', 'sticky'];
                 const currentIndex = tabs.indexOf(currentTab);
                 
                 let targetIndex;
@@ -92,12 +100,12 @@ function initializeTabs() {
 
 function switchTab(tabName) {
     // Remove active class from all tabs and content
-    [notesTab, tasksTab, stickyTab].forEach(tab => {
+    [notesTab, guidesTab, tasksTab, stickyTab].forEach(tab => {
         tab.classList.remove('active');
         tab.setAttribute('aria-selected', 'false');
         tab.setAttribute('tabindex', '-1');
     });
-    [notesContent, tasksContent, stickyContent].forEach(content => {
+    [notesContent, guidesContent, tasksContent, stickyContent].forEach(content => {
         content.classList.remove('active');
     });
     
@@ -107,6 +115,16 @@ function switchTab(tabName) {
         notesContent.classList.add('active');
         notesTab.setAttribute('aria-selected', 'true');
         notesTab.setAttribute('tabindex', '0');
+    } else if (tabName === 'guides') {
+        guidesTab.classList.add('active');
+        guidesContent.classList.add('active');
+        guidesTab.setAttribute('aria-selected', 'true');
+        guidesTab.setAttribute('tabindex', '0');
+
+        // Re-setup guides input listeners when tab becomes active
+        if (window.Guides && window.Guides.setupInputListeners) {
+            setTimeout(() => window.Guides.setupInputListeners(), 100);
+        }
     } else if (tabName === 'tasks') {
         tasksTab.classList.add('active');
         tasksContent.classList.add('active');
@@ -389,6 +407,8 @@ if (typeof window !== 'undefined') {
             taskInput,
             stickyList,
             stickyInput,
+            guidesList,
+            guidesInput,
             workingBookmarkList,
             workingBookmarkInput
         }

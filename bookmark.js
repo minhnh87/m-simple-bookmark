@@ -102,7 +102,7 @@ function createExportData() {
     const bookmarks = getBookmarksFromStorage();
     const note = window.Notes ? window.Notes.getNoteFromStorage() : null;
     const tasks = window.Tasks ? window.Tasks.getTasksFromStorage() : [];
-        
+
     // Enhanced sticky notes data retrieval with error handling
     let stickyNotes = [];
     try {
@@ -115,6 +115,20 @@ function createExportData() {
     } catch (error) {
         console.warn('Error retrieving sticky notes for export:', error);
         stickyNotes = [];
+    }
+
+    // Enhanced guides data retrieval with error handling
+    let guides = [];
+    try {
+        if (window.Guides && window.Guides.getGuidesFromStorage) {
+            guides = window.Guides.getGuidesFromStorage();
+        } else {
+            const guidesData = safeLocalStorageOperation('get', 'guides');
+            guides = guidesData ? JSON.parse(guidesData) : [];
+        }
+    } catch (error) {
+        console.warn('Error retrieving guides for export:', error);
+        guides = [];
     }
     
     // Enhanced working links data retrieval with validation
@@ -167,12 +181,13 @@ function createExportData() {
 
     // Create comprehensive export data object
     const exportData = {
-        version: '2.2', // Updated version for working links title/favicon support
+        version: '2.3', // Updated version for guides support
         exportDate: new Date().toISOString(),
         bookmarks: bookmarks || [],
         note: note || null,
         tasks: tasks || [],
         stickyNotes: stickyNotes || [],
+        guides: guides || [],
         workingLinks: workingLinks || [],
         timelineActivities: timelineActivities || []
     };
@@ -182,6 +197,7 @@ function createExportData() {
         bookmarkCount: exportData.bookmarks.length,
         taskCount: exportData.tasks.length,
         stickyNoteCount: exportData.stickyNotes.length,
+        guideCount: exportData.guides.length,
         workingLinkCount: exportData.workingLinks.length,
         timelineActivityCount: exportData.timelineActivities.length,
         hasNote: !!exportData.note
@@ -200,10 +216,11 @@ function exportBookmarks() {
         const hasNote = exportData.note && exportData.note.content && exportData.note.content.trim() !== '';
         const hasTasks = exportData.tasks && exportData.tasks.length > 0;
         const hasStickyNotes = exportData.stickyNotes && exportData.stickyNotes.length > 0;
+        const hasGuides = exportData.guides && exportData.guides.length > 0;
         const hasWorkingLinks = exportData.workingLinks && exportData.workingLinks.length > 0;
         const hasTimelineActivities = exportData.timelineActivities && exportData.timelineActivities.length > 0;
 
-        if (!hasBookmarks && !hasNote && !hasTasks && !hasStickyNotes && !hasWorkingLinks && !hasTimelineActivities) {
+        if (!hasBookmarks && !hasNote && !hasTasks && !hasStickyNotes && !hasGuides && !hasWorkingLinks && !hasTimelineActivities) {
             showMessage('No data to export', 'error');
             return;
         }
@@ -241,6 +258,7 @@ function exportBookmarks() {
         if (hasNote) summary.push('1 note');
         if (hasTasks) summary.push(`${exportData.tasks.length} tasks`);
         if (hasStickyNotes) summary.push(`${exportData.stickyNotes.length} sticky notes`);
+        if (hasGuides) summary.push(`${exportData.guides.length} guides`);
         if (hasWorkingLinks) summary.push(`${exportData.workingLinks.length} working links`);
         
         showMessage(`Export successful! Included: ${summary.join(', ')}`, 'success');
@@ -284,6 +302,7 @@ function importBookmarks(e) {
                 Notes: !!window.Notes,
                 Tasks: !!window.Tasks,
                 Sticky: !!window.Sticky,
+                Guides: !!window.Guides,
                 Working: !!window.Working
             });
             
@@ -413,7 +432,31 @@ function importBookmarks(e) {
                 } else if (importedData.stickyNotes !== undefined) {
                     console.log('Sticky notes data exists but is not a valid array:', typeof importedData.stickyNotes);
                 }
-                
+
+                // Import guides with validation
+                if (Array.isArray(importedData.guides) && importedData.guides.length > 0) {
+                    console.log('Processing guides:', importedData.guides.length);
+                    const validGuides = importedData.guides.filter(guide =>
+                        guide &&
+                        typeof guide === 'object' &&
+                        guide.title &&
+                        typeof guide.title === 'string' &&
+                        guide.title.trim() !== ''
+                    );
+
+                    console.log('Valid guides:', validGuides.length);
+                    if (validGuides.length > 0) {
+                        const success = safeLocalStorageOperation('set', 'guides', JSON.stringify(validGuides));
+                        if (success === true && window.Guides && window.Guides.displayGuidesList) {
+                            setTimeout(() => window.Guides.displayGuidesList(), 150);
+                        } else if (success !== true) {
+                            console.error('Failed to save guides to localStorage');
+                        }
+                    }
+                } else if (importedData.guides !== undefined) {
+                    console.log('Guides data exists but is not a valid array:', typeof importedData.guides);
+                }
+
                 // Enhanced working links import with comprehensive validation
                 if (Array.isArray(importedData.workingLinks) && importedData.workingLinks.length > 0) {
                     console.log('Processing working links:', importedData.workingLinks.length);
@@ -729,12 +772,14 @@ function restoreDefault() {
             const currentNote = window.Notes ? window.Notes.getNoteFromStorage() : null;
             const currentTasks = window.Tasks ? window.Tasks.getTasksFromStorage() : [];
             const currentSticky = JSON.parse(localStorage.getItem('stickyNotes') || '[]');
+            const currentGuides = JSON.parse(localStorage.getItem('guides') || '[]');
             const currentWorking = JSON.parse(localStorage.getItem('workingLinks') || '[]');
-            
+
             const clearedCounts = {
                 bookmarks: currentBookmarks.length,
                 tasks: currentTasks.length,
                 stickyNotes: currentSticky.length,
+                guides: currentGuides.length,
                 workingLinks: currentWorking.length,
                 hasNote: !!(currentNote && currentNote.content && currentNote.content.trim())
             };
@@ -742,9 +787,10 @@ function restoreDefault() {
             // Clear all localStorage data using safe operations
             const keysToRemove = [
                 'bookmarks',
-                'note', 
+                'note',
                 'tasks',
                 'stickyNotes',
+                'guides',
                 'workingLinks',
                 'viewMode'
             ];
@@ -771,6 +817,11 @@ function restoreDefault() {
                 // 4. Initialize sticky notes module
         if (window.Sticky && window.Sticky.displayStickyNotes) {
             window.Sticky.displayStickyNotes();
+        }
+
+                // 5. Initialize guides module
+        if (window.Guides && window.Guides.displayGuidesList) {
+            window.Guides.displayGuidesList();
         }
                 
                 // 5. Initialize working links module with clean state

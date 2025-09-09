@@ -183,3 +183,8 @@ if (typeof module !== 'undefined' && module.exports) {
         showMessage
     };
 }
+
+// Also export to window for global access
+if (typeof window !== 'undefined') {
+    window.showMessage = showMessage;
+}
