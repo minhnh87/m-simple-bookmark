@@ -17,8 +17,8 @@ const API_HEADERS = {
  */
 async function saveToApi(data) {
     try {
-        
-        
+
+
         const response = await fetch(API_ENDPOINT_SET, {
             method: 'POST',
             headers: API_HEADERS,
@@ -27,16 +27,16 @@ async function saveToApi(data) {
                 value: JSON.stringify(data)
             })
         });
-        
+
         if (!response.ok) {
             throw new Error(`API error: ${response.status} ${response.statusText}`);
         }
-        
+
         const result = await response.json();
         console.log('Save to API successful:', result);
         showMessage('Syncing to cloud...', 'info');
         return true;
-        
+
     } catch (error) {
         console.error('Save to API error:', error);
         showMessage('Sync failed: ' + error.message, 'error');
@@ -54,21 +54,21 @@ async function loadFromApi() {
             method: 'GET',
             headers: API_HEADERS
         });
-        
+
         if (!response.ok) {
             throw new Error(`API error: ${response.status} ${response.statusText}`);
         }
-        
+
         const result = await response.json();
         console.log('Load from API successful:', result);
-        
+
         // Return the data if it exists
         if (result && result.data && result.data !== '') {
             return JSON.parse(result.data);
         }
-        
+
         return null;
-        
+
     } catch (error) {
         console.error('Load from API error:', error);
         return null;
@@ -86,26 +86,26 @@ async function syncToCloud() {
             showMessage('Export functionality not available', 'error');
             return false;
         }
-        
+
         const exportData = window.Bookmarks.createExportData();
-        
+
         // Check if there's any data to sync (using metadata from createExportData)
-        const hasData = exportData.metadata.bookmarkCount > 0 || 
+        const hasData = exportData.metadata.bookmarkCount > 0 ||
                        exportData.metadata.hasNote ||
                        exportData.metadata.taskCount > 0 ||
-                       exportData.metadata.stickyNoteCount > 0 ||
+                       exportData.metadata.stickyNoteCount > 0 || exportData.metadata.guideCount > 0 ||
                        exportData.metadata.workingLinkCount > 0 ||
                        exportData.metadata.timelineActivityCount > 0;
-        
+
         if (!hasData) {
             showMessage('No data to sync', 'warning');
             return false;
         }
-        
+
         const success = await saveToApi(exportData);
-        
+
         return success;
-        
+
     } catch (error) {
         console.error('Sync to cloud error:', error);
         showMessage('Sync failed: ' + error.message, 'error');
@@ -120,23 +120,23 @@ async function syncToCloud() {
 async function loadAndOverwriteFromCloud() {
     try {
         const cloudData = await loadFromApi();
-        
+
         if (!cloudData) {
             console.log('No cloud data found, using local data');
             showMessage('No cloud backup found, using local data', 'info');
             return false;
         }
-        
+
         console.log('Cloud data retrieved:', cloudData);
-        
+
         // Import the data using the same logic as import function
-        
+
         // Import bookmarks
         if (Array.isArray(cloudData.bookmarks) && cloudData.bookmarks.length > 0) {
-            const validBookmarks = cloudData.bookmarks.filter(bookmark => 
-                bookmark && 
-                typeof bookmark === 'object' && 
-                (bookmark.name || bookmark.title) && 
+            const validBookmarks = cloudData.bookmarks.filter(bookmark =>
+                bookmark &&
+                typeof bookmark === 'object' &&
+                (bookmark.name || bookmark.title) &&
                 bookmark.url &&
                 typeof (bookmark.name || bookmark.title) === 'string' &&
                 typeof bookmark.url === 'string' &&
@@ -150,53 +150,69 @@ async function loadAndOverwriteFromCloud() {
                 category: bookmark.category || '',
                 isDefault: bookmark.isDefault || false
             }));
-            
+
             if (validBookmarks.length > 0) {
                 const success = safeLocalStorageOperation('set', 'bookmarks', JSON.stringify(validBookmarks));
             }
         }
-        
+
         // Import note
         if (cloudData.note && typeof cloudData.note === 'object' && cloudData.note.content) {
             const success = safeLocalStorageOperation('set', 'note', JSON.stringify(cloudData.note));
         }
-        
+
         // Import tasks
         if (Array.isArray(cloudData.tasks) && cloudData.tasks.length > 0) {
-            const validTasks = cloudData.tasks.filter(task => 
-                task && 
-                typeof task === 'object' && 
+            const validTasks = cloudData.tasks.filter(task =>
+                task &&
+                typeof task === 'object' &&
                 task.text &&
                 typeof task.text === 'string' &&
                 task.text.trim() !== ''
             );
-            
+
             if (validTasks.length > 0) {
                 const success = safeLocalStorageOperation('set', 'tasks', JSON.stringify(validTasks));
             }
         }
-        
+
         // Import sticky notes
         if (Array.isArray(cloudData.stickyNotes) && cloudData.stickyNotes.length > 0) {
-            const validStickyNotes = cloudData.stickyNotes.filter(note => 
-                note && 
-                typeof note === 'object' && 
+            const validStickyNotes = cloudData.stickyNotes.filter(note =>
+                note &&
+                typeof note === 'object' &&
                 note.content &&
                 typeof note.content === 'string' &&
                 note.content.trim() !== ''
             );
-            
+
             if (validStickyNotes.length > 0) {
                 const success = safeLocalStorageOperation('set', 'stickyNotes', JSON.stringify(validStickyNotes));
             }
         }
-        
+
+        // Import guides
+        if (Array.isArray(cloudData.guides) && cloudData.guides.length > 0) {
+            const validGuides = cloudData.guides.filter(guide =>
+                guide &&
+                typeof guide === 'object' &&
+                guide.title &&
+                typeof guide.title === 'string' &&
+                guide.title.trim() !== ''
+            );
+
+            if (validGuides.length > 0) {
+                const success = safeLocalStorageOperation('set', 'guides', JSON.stringify(validGuides));
+            }
+        }
+
+
         // Import working links
         if (Array.isArray(cloudData.workingLinks) && cloudData.workingLinks.length > 0) {
             const validWorkingLinks = cloudData.workingLinks.filter(link => {
                 if (!link || typeof link !== 'object') return false;
                 if (!link.url || typeof link.url !== 'string' || link.url.trim() === '') return false;
-                
+
                 // Validate URL format
                 try {
                     const url = link.url.trim();
@@ -211,7 +227,7 @@ async function loadAndOverwriteFromCloud() {
             }).map(link => {
                 const trimmedUrl = link.url.trim();
                 let generatedTitle = link.title;
-                
+
                 // Generate title if not provided
                 if (!generatedTitle) {
                     try {
@@ -223,7 +239,7 @@ async function loadAndOverwriteFromCloud() {
                         generatedTitle = trimmedUrl; // Fallback to URL itself
                     }
                 }
-                
+
                 return {
                     id: link.id || Date.now() + Math.random(),
                     url: trimmedUrl,
@@ -231,7 +247,7 @@ async function loadAndOverwriteFromCloud() {
                     timestamp: link.timestamp || new Date().toISOString()
                 };
             });
-            
+
             if (validWorkingLinks.length > 0) {
                 const success = safeLocalStorageOperation('set', 'workingLinks', JSON.stringify(validWorkingLinks));
             }
@@ -261,10 +277,10 @@ async function loadAndOverwriteFromCloud() {
                 const success = safeLocalStorageOperation('set', 'company-timeline-activities', JSON.stringify(validTimelineActivities));
             }
         }
-        
+
         showMessage('Cloud data loaded successfully!', 'success');
         return true;
-        
+
     } catch (error) {
         console.error('Initialize from cloud error:', error);
         showMessage('Failed to load cloud data: ' + error.message, 'error');

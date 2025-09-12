@@ -22,6 +22,11 @@ const notesTab = document.getElementById('notes-tab');
 const guidesTab = document.getElementById('guides-tab');
 const tasksTab = document.getElementById('tasks-tab');
 const stickyTab = document.getElementById('sticky-tab');
+const commandsTab = document.getElementById('commands-tab');
+const commandsContent = document.getElementById('commands-content');
+const commandsList = document.getElementById('commands-list');
+const commandsInput = document.getElementById('commands-input');
+
 const notesContent = document.getElementById('notes-content');
 const guidesContent = document.getElementById('guides-content');
 const tasksContent = document.getElementById('tasks-content');
@@ -39,6 +44,8 @@ const bookmarksContent = document.getElementById('bookmarks-content');
 const workingBookmarkContent = document.getElementById('working-bookmark-content');
 const workingBookmarkList = document.getElementById('working-bookmark-list');
 const workingBookmarkInput = document.getElementById('working-bookmark-input');
+const promptTab = document.getElementById('prompt-tab');
+const promptContent = document.getElementById('prompt-content');
 
 // Initialize UI when DOM is loaded
 function initializeUI() {
@@ -54,6 +61,12 @@ function initializeTabs() {
         switchTab('notes');
     });
 
+    if (commandsTab) {
+        commandsTab.addEventListener('click', () => {
+            switchTab('commands');
+        });
+    }
+
     guidesTab.addEventListener('click', () => {
         switchTab('guides');
     });
@@ -65,29 +78,30 @@ function initializeTabs() {
     stickyTab.addEventListener('click', () => {
         switchTab('sticky');
     });
-    
+
 
 
     // Add keyboard navigation for tabs
-    [notesTab, guidesTab, tasksTab, stickyTab].forEach(tab => {
+    [notesTab, commandsTab, guidesTab, tasksTab, stickyTab].forEach(tab => {
+        if (!tab) return;
         tab.addEventListener('keydown', (e) => {
             if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
                 e.preventDefault();
                 const currentTab = e.target;
-                const tabs = [notesTab, guidesTab, tasksTab, stickyTab];
-                const tabNames = ['notes', 'guides', 'tasks', 'sticky'];
+                const tabs = [notesTab, commandsTab, guidesTab, tasksTab, stickyTab].filter(Boolean);
+                const tabNames = ['notes', 'commands', 'guides', 'tasks', 'sticky'].slice(0, tabs.length);
                 const currentIndex = tabs.indexOf(currentTab);
-                
+
                 let targetIndex;
                 if (e.key === 'ArrowRight') {
                     targetIndex = (currentIndex + 1) % tabs.length;
                 } else {
                     targetIndex = (currentIndex - 1 + tabs.length) % tabs.length;
                 }
-                
+
                 const targetTab = tabs[targetIndex];
                 const targetTabName = tabNames[targetIndex];
-                
+
                 switchTab(targetTabName);
                 targetTab.focus();
             } else if (e.key === 'Enter' || e.key === ' ') {
@@ -100,21 +114,26 @@ function initializeTabs() {
 
 function switchTab(tabName) {
     // Remove active class from all tabs and content
-    [notesTab, guidesTab, tasksTab, stickyTab].forEach(tab => {
+    [notesTab, commandsTab, guidesTab, tasksTab, stickyTab].filter(Boolean).forEach(tab => {
         tab.classList.remove('active');
         tab.setAttribute('aria-selected', 'false');
         tab.setAttribute('tabindex', '-1');
     });
-    [notesContent, guidesContent, tasksContent, stickyContent].forEach(content => {
+    [notesContent, commandsContent, guidesContent, tasksContent, stickyContent].filter(Boolean).forEach(content => {
         content.classList.remove('active');
     });
-    
+
     // Add active class to selected tab and content
     if (tabName === 'notes') {
         notesTab.classList.add('active');
         notesContent.classList.add('active');
         notesTab.setAttribute('aria-selected', 'true');
         notesTab.setAttribute('tabindex', '0');
+    } else if (tabName === 'commands' && commandsTab && commandsContent) {
+        commandsTab.classList.add('active');
+        commandsContent.classList.add('active');
+        commandsTab.setAttribute('aria-selected', 'true');
+        commandsTab.setAttribute('tabindex', '0');
     } else if (tabName === 'guides') {
         guidesTab.classList.add('active');
         guidesContent.classList.add('active');
@@ -143,31 +162,38 @@ function initializeBookmarkTabs() {
     bookmarksTab.addEventListener('click', () => {
         switchBookmarkTab('bookmarks');
     });
-    
+
     workingBookmarkTab.addEventListener('click', () => {
         switchBookmarkTab('working');
     });
-    
+
+    if (promptTab) {
+        promptTab.addEventListener('click', () => {
+            switchBookmarkTab('prompt');
+        });
+    }
+
     // Add keyboard navigation for bookmark tabs
-    [bookmarksTab, workingBookmarkTab].forEach(tab => {
+    [bookmarksTab, workingBookmarkTab, promptTab].forEach(tab => {
+        if (!tab) return;
         tab.addEventListener('keydown', (e) => {
             if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
                 e.preventDefault();
                 const currentTab = e.target;
-                const tabs = [bookmarksTab, workingBookmarkTab];
-                const tabNames = ['bookmarks', 'working'];
+                const tabs = [bookmarksTab, workingBookmarkTab, promptTab].filter(Boolean);
+                const tabNames = ['bookmarks', 'working', 'prompt'].slice(0, tabs.length);
                 const currentIndex = tabs.indexOf(currentTab);
-                
+
                 let targetIndex;
                 if (e.key === 'ArrowRight') {
                     targetIndex = (currentIndex + 1) % tabs.length;
                 } else {
                     targetIndex = (currentIndex - 1 + tabs.length) % tabs.length;
                 }
-                
+
                 const targetTab = tabs[targetIndex];
                 const targetTabName = tabNames[targetIndex];
-                
+
                 switchBookmarkTab(targetTabName);
                 targetTab.focus();
             } else if (e.key === 'Enter' || e.key === ' ') {
@@ -180,15 +206,15 @@ function initializeBookmarkTabs() {
 
 function switchBookmarkTab(tabName) {
     // Remove active class from all bookmark tabs and content
-    [bookmarksTab, workingBookmarkTab].forEach(tab => {
+    [bookmarksTab, workingBookmarkTab, promptTab].filter(Boolean).forEach(tab => {
         tab.classList.remove('active');
         tab.setAttribute('aria-selected', 'false');
         tab.setAttribute('tabindex', '-1');
     });
-    [bookmarksContent, workingBookmarkContent].forEach(content => {
+    [bookmarksContent, workingBookmarkContent, promptContent].filter(Boolean).forEach(content => {
         content.classList.remove('active');
     });
-    
+
     // Add active class to selected tab and content
     if (tabName === 'bookmarks') {
         bookmarksTab.classList.add('active');
@@ -200,6 +226,11 @@ function switchBookmarkTab(tabName) {
         workingBookmarkContent.classList.add('active');
         workingBookmarkTab.setAttribute('aria-selected', 'true');
         workingBookmarkTab.setAttribute('tabindex', '0');
+    } else if (tabName === 'prompt' && promptTab && promptContent) {
+        promptTab.classList.add('active');
+        promptContent.classList.add('active');
+        promptTab.setAttribute('aria-selected', 'true');
+        promptTab.setAttribute('tabindex', '0');
     }
 }
 
@@ -216,7 +247,7 @@ function setViewMode(mode) {
         gridViewBtn.classList.add('active');
         rowViewBtn.classList.remove('active');
         bookmarksList.classList.remove('row-view');
-        
+
         // Update ARIA attributes
         gridViewBtn.setAttribute('aria-pressed', 'true');
         rowViewBtn.setAttribute('aria-pressed', 'false');
@@ -224,12 +255,12 @@ function setViewMode(mode) {
         rowViewBtn.classList.add('active');
         gridViewBtn.classList.remove('active');
         bookmarksList.classList.add('row-view');
-        
+
         // Update ARIA attributes
         rowViewBtn.setAttribute('aria-pressed', 'true');
         gridViewBtn.setAttribute('aria-pressed', 'false');
     }
-    
+
     // Save to localStorage
     localStorage.setItem('viewMode', mode);
 }
@@ -276,7 +307,7 @@ function addMessageStyles() {
             gap: 12px;
             pointer-events: none;
         }
-        
+
         .message {
             padding: 16px 20px;
             border-radius: 12px;
@@ -293,7 +324,7 @@ function addMessageStyles() {
             pointer-events: auto;
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
-        
+
         .message::before {
             content: '';
             position: absolute;
@@ -303,40 +334,40 @@ function addMessageStyles() {
             height: 3px;
             border-radius: 12px 12px 0 0;
         }
-        
+
         .success {
             background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
         }
-        
+
         .success::before {
             background: linear-gradient(90deg, #2ecc71, #27ae60);
         }
-        
+
         .error {
             background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%);
         }
-        
+
         .error::before {
             background: linear-gradient(90deg, #e74c3c, #c0392b);
         }
-        
+
         .info {
             background: linear-gradient(135deg, #3498db 0%, #5dade2 100%);
         }
-        
+
         .info::before {
             background: linear-gradient(90deg, #5dade2, #3498db);
         }
-        
+
         .message:hover {
             transform: translateY(-2px);
             box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15), 0 4px 12px rgba(0, 0, 0, 0.1);
         }
-        
+
         .fade-out {
             animation: fade-out 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
         }
-        
+
         @keyframes slide-in {
             from {
                 transform: translateX(100%) scale(0.9);
@@ -347,7 +378,7 @@ function addMessageStyles() {
                 opacity: 1;
             }
         }
-        
+
         @keyframes fade-out {
             from {
                 transform: translateX(0) scale(1);
@@ -358,7 +389,7 @@ function addMessageStyles() {
                 opacity: 0;
             }
         }
-        
+
         /* Mobile responsive */
         @media (max-width: 480px) {
             .message-container {
@@ -366,7 +397,7 @@ function addMessageStyles() {
                 right: 16px;
                 left: 16px;
             }
-            
+
             .message {
                 min-width: auto;
                 max-width: none;
@@ -410,7 +441,9 @@ if (typeof window !== 'undefined') {
             guidesList,
             guidesInput,
             workingBookmarkList,
-            workingBookmarkInput
+            workingBookmarkInput,
+            commandsList,
+            commandsInput
         }
     };
 }

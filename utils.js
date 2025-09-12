@@ -17,10 +17,9 @@ function sanitizeInput(input) {
     return div.innerHTML;
 }
 
-// Generate random color function
-function getRandomColor() {
-    // Array of gentle, harmonious colors in RGB format
-    const colors = [
+// Color palette and helpers
+function getColorPalette() {
+    return [
         'rgb(250, 235, 235)', // very soft rose
         'rgb(235, 245, 235)', // very soft mint
         'rgb(235, 240, 250)', // very soft blue
@@ -34,8 +33,11 @@ function getRandomColor() {
         'rgb(250, 245, 240)', // very soft peach
         'rgb(240, 235, 245)', // very soft mauve
     ];
-    
-    // Return a random color from the array
+}
+
+// Generate random color function
+function getRandomColor() {
+    const colors = getColorPalette();
     return colors[Math.floor(Math.random() * colors.length)];
 }
 
@@ -176,6 +178,7 @@ if (typeof module !== 'undefined' && module.exports) {
         isValidUrl,
         sanitizeInput,
         getRandomColor,
+        getColorPalette,
         safeLocalStorageOperation,
         debounce,
         formatDate,
@@ -187,4 +190,6 @@ if (typeof module !== 'undefined' && module.exports) {
 // Also export to window for global access
 if (typeof window !== 'undefined') {
     window.showMessage = showMessage;
+    window.getRandomColor = getRandomColor;
+    window.getColorPalette = getColorPalette;
 }

@@ -21,17 +21,21 @@
                     <i class="fas fa-link" aria-hidden="true"></i>
                     <span class="nav-label">WK</span>
                 </button>
+                <button id="prompt-tab" class="sidebar-nav-button" role="tab" aria-selected="false" aria-controls="prompt-content">
+                    <i class="fas fa-keyboard" aria-hidden="true"></i>
+                    <span class="nav-label">PR</span>
+                </button>
             </div>
-            
+
             <!-- Control Buttons -->
             <div class="sidebar-controls">
                 <button id="restore-default" class="sidebar-control-button" aria-label="Restore default bookmarks and clear all data">
-                    <i class="fas fa-undo" aria-hidden="true"></i> 
+                    <i class="fas fa-undo" aria-hidden="true"></i>
                 </button>
                 <button id="export-bookmarks" class="sidebar-control-button" aria-label="Export all bookmarks, notes and tasks">
                     <i class="fas fa-file-export" aria-hidden="true"></i>Export
                 </button>
-                
+
                 <button id="import-bookmarks" class="sidebar-control-button" aria-label="Import bookmarks, notes and tasks from a file">
                     <i class="fas fa-file-import" aria-hidden="true"></i>Import
                 </button>
@@ -44,7 +48,7 @@
                 <input type="file" id="import-file" accept=".json" style="display: none;">
             </div>
         </div>
-        
+
         <div class="container">
             <div class="bookmarks-container">
                     <div id="bookmarks-content" class="bookmark-tab-content active" role="tabpanel" aria-labelledby="bookmarks-tab">
@@ -62,7 +66,7 @@
                                 <i class="fas fa-plus" aria-hidden="true"></i> New
                             </button>
                         </div>
-                        
+
                         <div id="bookmarks-list" role="grid" aria-label="Bookmarks collection"></div>
                     </div>
                     <div id="working-bookmark-content" class="bookmark-tab-content" role="tabpanel" aria-labelledby="working-bookmark-tab">
@@ -74,6 +78,28 @@
                         </div>
                         <div id="working-bookmark-list" role="list" aria-label="Working links list"></div>
                     </div>
+                    <div id="prompt-content" class="bookmark-tab-content" role="tabpanel" aria-labelledby="prompt-tab">
+                        <div class="prompt-container">
+                            <textarea id="prompt-textarea" placeholder="Enter your prompt here..."></textarea>
+                            <div class="prompt-controls">
+                                <div class="prompt-button-grid">
+                                    <button id="add-verification-text" class="control-button"><i class="fas fa-check-double" aria-hidden="true"></i><span>Add Verification Text</span></button>
+                                    <button id="copy-prompt-to-clipboard" class="control-button"><i class="fas fa-copy" aria-hidden="true"></i><span>Copy to Clipboard</span></button>
+                                    <button id="add-implementation-guide" class="control-button"><i class="fas fa-wrench" aria-hidden="true"></i><span>Add Implementation Guide</span></button>
+                                    <button id="clear-prompt-text" class="control-button"><i class="fas fa-eraser" aria-hidden="true"></i><span>Clear Text</span></button>
+                                    <button id="add-clean-code-reminder" class="control-button"><i class="fas fa-code" aria-hidden="true"></i><span>Add Clean Code Reminder</span></button>
+                                </div>
+                                <div class="prompt-custom-row">
+                                    <input type="text" id="custom-text-1-input" placeholder="Custom Text 1...">
+                                    <button id="add-custom-text-1-btn" class="control-button"><i class="fas fa-plus" aria-hidden="true"></i><span>Add Custom Text 1</span></button>
+                                </div>
+                                <div class="prompt-custom-row">
+                                    <input type="text" id="custom-text-2-input" placeholder="Custom Text 2...">
+                                    <button id="add-custom-text-2-btn" class="control-button"><i class="fas fa-plus" aria-hidden="true"></i><span>Add Custom Text 2</span></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
         </div>
 
@@ -81,6 +107,7 @@
             <div class="tabs-container">
                 <div class="tab-buttons" role="tablist" aria-label="Main navigation">
                     <button id="notes-tab" class="tab-button active" role="tab" aria-selected="true" aria-controls="notes-content">Notes</button>
+                    <button id="commands-tab" class="tab-button" role="tab" aria-selected="false" aria-controls="commands-content">Commands</button>
                     <button id="guides-tab" class="tab-button" role="tab" aria-selected="false" aria-controls="guides-content">Guides</button>
                     <button id="sticky-tab" class="tab-button" role="tab" aria-selected="false" aria-controls="sticky-content">Sticky</button>
                     <button id="tasks-tab" class="tab-button" role="tab" aria-selected="false" aria-controls="tasks-content">Tasks</button>
@@ -88,6 +115,12 @@
                 </div>
                 <div id="notes-content" class="tab-content active" role="tabpanel" aria-labelledby="notes-tab">
                     <div id="notes-list"></div>
+                </div>
+                <div id="commands-content" class="tab-content" role="tabpanel" aria-labelledby="commands-tab">
+                    <div class="command-input-container">
+                        <input type="text" id="commands-input" placeholder="Add a new command..." aria-label="New command input">
+                    </div>
+                    <div id="commands-list" role="list" aria-label="Commands list"></div>
                 </div>
                 <div id="guides-content" class="tab-content" role="tabpanel" aria-labelledby="guides-tab">
                     <div id="guides-list-view" class="guides-view">
@@ -136,7 +169,7 @@
 
             </div>
         </div>
-        
+
         <div class="add-bookmark-container" id="add-form" role="dialog" aria-labelledby="add-form-title" aria-modal="true">
             <form id="bookmark-form">
                 <h2 id="add-form-title" class="visually-hidden">Add New Bookmark</h2>
@@ -144,6 +177,7 @@
                     <input type="text" id="bookmark-name" placeholder="Website Name" required aria-label="Website name">
                     <input type="url" id="bookmark-url" placeholder="Website URL" required aria-label="Website URL">
                     <input type="text" id="bookmark-category" placeholder="Category (e.g., personal, work, doc)" aria-label="Bookmark category">
+
                 </div>
                 <div class="form-buttons">
                     <button type="button" id="cancel-add" class="cancel-button" aria-label="Cancel adding bookmark">
@@ -155,7 +189,10 @@
                 </div>
             </form>
         </div>
+
     </div>
+    <script src="commands.js"></script>
+
 
     <script src="utils.js"></script>
     <script src="ui.js"></script>
@@ -166,19 +203,22 @@
     <script src="task.js"></script>
     <script src="sticky.js"></script>
     <script src="working.js"></script>
+    <script src="prompt.js"></script>
     <script>
         // Initialize all modules when DOM is loaded
         document.addEventListener('DOMContentLoaded', async () => {
             window.UI.initializeUI();
-            
+
             // Initialize all modules from local storage only
             window.Bookmarks.initializeBookmarks();
             window.Notes.initializeNote();
+            window.Commands && window.Commands.initializeCommands();
             window.Guides.initializeGuides();
             window.Tasks.initializeTasks();
             window.Sticky.initializeSticky();
+            window.Prompt.initializePrompt();
             window.Working.initializeWorking();
         });
     </script>
 </body>
-</html> 
+</html>
