@@ -350,7 +350,7 @@ button:hover {
 }
 
 .bookmark-item {
-    background-color: white;
+    background-color: #fff3ed;
     padding: 1px 4px;
     border-radius: 4px;
     min-width: 170px;
@@ -363,6 +363,7 @@ button:hover {
     position: relative;
     cursor: pointer;
     border: 1px solid rgba(0,0,0,0.08);
+    border-left: 3px solid transparent;
 }
 
 .bookmark-item:hover {
@@ -419,8 +420,8 @@ button:hover {
     color: #f44336;
     margin: 12px 0 6px 0;
     padding: 4px 8px;
-    background-color: var(--light-gray);
-    border-left: 3px solid #994e4e;
+    background-color: #fffcfc;
+    border-left: 3px solid rgb(255, 125, 83);
     border-radius: 2px;
 }
 
@@ -433,6 +434,8 @@ button:hover {
     grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
     gap: 8px;
     margin-bottom: 10px;
+    padding-left: 5px;
+    padding-right: 3px;
 }
 
 #bookmarks-list.row-view .category-group {
@@ -750,7 +753,7 @@ button:hover {
 
 /* Style for the default bookmark */
 .default-bookmark {
-    border-left: 3px solid #007bff;
+    /* border-left: 3px solid #007bff; */
 }
 
 /* Tooltip styles */

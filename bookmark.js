@@ -688,7 +688,8 @@ function createBookmarkElement(bookmark) {
 
     // Apply color if exists, or generate a new one
     const backgroundColor = bookmark.color || getRandomColor();
-    bookmarkItem.style.backgroundColor = backgroundColor;
+    // Accent the border-left with a stronger/darker tone derived from the base color
+    bookmarkItem.style.borderLeftColor = (typeof deriveAccentColor === 'function' ? deriveAccentColor(backgroundColor) : backgroundColor);
 
     // Create bookmark info container
     const bookmarkInfo = document.createElement('div');
