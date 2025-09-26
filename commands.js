@@ -77,6 +77,7 @@ function renderCommands(commands) {
         // Inline edit helpers and events
         let isEditing = false;
         let originalText = item.text;
+        let copyResetTimer = null;
 
         function startEdit() {
             isEditing = true;
@@ -231,6 +232,14 @@ function renderCommands(commands) {
             if (e.target.closest('.command-actions') || e.target.closest('.command-color-picker')) return;
             try {
                 await navigator.clipboard.writeText(item.text);
+                // Temporary highlight on successful copy
+                const originalBg = container.dataset.originalBg || container.style.backgroundColor || '#ffffff';
+                container.dataset.originalBg = originalBg;
+                container.style.backgroundColor = '#e6f8edff';
+                if (copyResetTimer) clearTimeout(copyResetTimer);
+                copyResetTimer = setTimeout(() => {
+                    container.style.backgroundColor = container.dataset.originalBg || originalBg;
+                }, 300);
             } catch (err) {
                 showMessage('Failed to copy', 'error');
             }

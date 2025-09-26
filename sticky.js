@@ -157,8 +157,6 @@ function createStickyNoteElement(note) {
     
     // Apply random color if available, otherwise use default yellow
     const color = note.color || { bg: '#fffbf0', border: '#f0e68c', accent: '#daa520' };
-    noteDiv.style.backgroundColor = color.bg;
-    noteDiv.style.borderColor = color.border;
     noteDiv.style.borderLeftColor = color.accent;
     
     // Handle title display

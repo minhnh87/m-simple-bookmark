@@ -84,19 +84,22 @@ function initializePrompt() {
 
     if (addVerificationBtn) {
         addVerificationBtn.addEventListener('click', () => {
-            appendText('IMPORTANT: Luôn verify lại câu trả lời, không tự suy luận');
+            appendText("IMPORTANT: Always verify before responding with results, do not make assumptions");
         });
     }
 
     if (addImplementationBtn) {
         addImplementationBtn.addEventListener('click', () => {
-            appendText('IMPORTANT: Chỉ implement những function/method cần thiết, không over engineer');
+            appendText('IMPORTANT: Avoid over-engineering or unnecessary abstraction');
+            appendText('IMPORTANT: Do not add speculative features or future-proofing unless explicitly required');
+            appendText('IMPORTANT: Write clean, high-quality code');
         });
     }
 
     if (addCleanCodeBtn) {
         addCleanCodeBtn.addEventListener('click', () => {
-            appendText('IMPORTANT: Implement clean code, solid principle');
+            appendText('IMPORTANT: Solutions must be straightforward and easy to understand');
+            appendText('IMPORTANT: Focus only on immediate requirements and deliverables');
         });
     }
 

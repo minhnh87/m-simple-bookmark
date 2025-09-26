@@ -983,7 +983,7 @@ button:hover {
 .sticky-note-item {
     background-color: #fffbf0;
     border: 1px solid #f0e68c;
-    border-left: 4px solid #daa520;
+    border-left: 6px solid #daa520;
     border-radius: 5px;
     padding: 8px;
     width: 30%;
@@ -1299,9 +1299,9 @@ button:hover {
 
 /* Guide List Items */
 .guide-list-item {
-    background-color: #f0f8ff;
-    border: 1px solid #87ceeb;
-    border-left: 4px solid #4682b4;
+    background-color: #fffbf0;
+    border: 1px solid #f0e68c;
+    border-left: 6px solid #4682b4;
     border-radius: 5px;
     padding: 4px 8px;
     min-width: 100px;
@@ -1850,7 +1850,7 @@ button:hover {
     justify-content: space-between;
     gap: 10px;
     cursor: pointer;
-    transition: box-shadow 0.15s ease, transform 0.05s ease, border-color 0.15s ease;
+    transition: box-shadow 0.15s ease, transform 0.05s ease, border-color 0.15s ease, background-color 0.15s ease;
 }
 
 .command-item:hover {

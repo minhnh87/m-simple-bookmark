@@ -330,8 +330,8 @@ function createGuideListElement(guide) {
 
     // Apply random color if available, otherwise use default blue
     const color = guide.color || { bg: '#f0f8ff', border: '#87ceeb', accent: '#4682b4' };
-    guideDiv.style.backgroundColor = color.bg;
-    guideDiv.style.borderColor = color.border;
+    // guideDiv.style.backgroundColor = color.bg;
+    // guideDiv.style.borderColor = color.border;
     guideDiv.style.borderLeftColor = color.accent;
 
     // Handle title display
