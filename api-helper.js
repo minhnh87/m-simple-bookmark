@@ -93,7 +93,9 @@ async function syncToCloud() {
         const hasData = exportData.metadata.bookmarkCount > 0 ||
                        exportData.metadata.hasNote ||
                        exportData.metadata.taskCount > 0 ||
-                       exportData.metadata.stickyNoteCount > 0 || exportData.metadata.guideCount > 0 ||
+                       exportData.metadata.stickyNoteCount > 0 ||
+                       exportData.metadata.guideCount > 0 ||
+                       exportData.metadata.commandCount > 0 ||
                        exportData.metadata.workingLinkCount > 0 ||
                        exportData.metadata.timelineActivityCount > 0;
 
@@ -206,6 +208,28 @@ async function loadAndOverwriteFromCloud() {
             }
         }
 
+        // Import commands
+        if (Array.isArray(cloudData.commands) && cloudData.commands.length > 0) {
+            const validCommands = cloudData.commands.filter(command =>
+                command &&
+                typeof command === 'object' &&
+                command.text &&
+                typeof command.text === 'string' &&
+                command.text.trim() !== ''
+            ).map(command => ({
+                id: command.id || Date.now() + Math.random(),
+                text: command.text.trim(),
+                color: command.color || (typeof getRandomColor === 'function' ? getRandomColor() : '#f0f0f0'),
+                createdAt: command.createdAt || new Date().toISOString()
+            }));
+
+            if (validCommands.length > 0) {
+                const success = safeLocalStorageOperation('set', 'commands', JSON.stringify(validCommands));
+                if (success === true && window.Commands && window.Commands.loadCommands) {
+                    setTimeout(() => window.Commands.loadCommands(), 150);
+                }
+            }
+        }
 
         // Import working links
         if (Array.isArray(cloudData.workingLinks) && cloudData.workingLinks.length > 0) {
