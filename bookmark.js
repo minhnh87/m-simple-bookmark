@@ -811,6 +811,7 @@ function getDragAfterElement(container, x, y, isDropEvent = false) {
             debugElements.push({
                 name: child.querySelector('.bookmark-name')?.textContent,
                 id: child.dataset.bookmarkId,
+                rect: { left: box.left, top: box.top, width: box.width, height: box.height },
                 centerX, centerY, cursorIsAfter
             });
         }
@@ -827,6 +828,7 @@ function getDragAfterElement(container, x, y, isDropEvent = false) {
 
     if (isDropEvent) {
         console.log('[DnD Position]', {
+            cursor: { x, y },
             elements: debugElements,
             chosen: closest ? closest.querySelector('.bookmark-name')?.textContent : 'END'
         });
