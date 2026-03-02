@@ -686,6 +686,13 @@ function createBookmarkElement(bookmark) {
     bookmarkItem.setAttribute('role', 'gridcell');
     bookmarkItem.setAttribute('aria-label', `Bookmark: ${bookmark.name}`);
 
+    // Drag & drop attributes
+    bookmarkItem.setAttribute('draggable', 'true');
+    bookmarkItem.dataset.bookmarkId = String(bookmark.id);
+
+    bookmarkItem.addEventListener('dragstart', (e) => handleDragStart(e, bookmark.id));
+    bookmarkItem.addEventListener('dragend', handleDragEnd);
+
     // Apply color if exists, or generate a new one
     const backgroundColor = bookmark.color || getRandomColor();
     // Accent the border-left with a stronger/darker tone derived from the base color
@@ -752,6 +759,139 @@ function createBookmarkElement(bookmark) {
     return bookmarkItem;
 }
 
+// --- Drag & Drop ---
+
+let draggedBookmarkId = null;
+
+function handleDragStart(e, bookmarkId) {
+    draggedBookmarkId = bookmarkId;
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', String(bookmarkId));
+    // Delay adding class so the drag image captures the original look
+    requestAnimationFrame(() => {
+        e.target.closest('.bookmark-item').classList.add('dragging');
+    });
+}
+
+function handleDragEnd(e) {
+    e.target.closest('.bookmark-item').classList.remove('dragging');
+    draggedBookmarkId = null;
+    // Clean up all drag-over classes and placeholders
+    document.querySelectorAll('.category-group.drag-over').forEach(el => el.classList.remove('drag-over'));
+    document.querySelectorAll('.drag-placeholder').forEach(el => el.remove());
+}
+
+function getDragAfterElement(container, y) {
+    const draggableElements = [...container.querySelectorAll('.bookmark-item:not(.dragging)')];
+    let closest = null;
+    let closestOffset = Number.NEGATIVE_INFINITY;
+
+    draggableElements.forEach(child => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+        if (offset < 0 && offset > closestOffset) {
+            closestOffset = offset;
+            closest = child;
+        }
+    });
+
+    return closest;
+}
+
+function handleDragOver(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+
+    const group = e.currentTarget;
+    group.classList.add('drag-over');
+
+    // Remove existing placeholder
+    const existingPlaceholder = group.querySelector('.drag-placeholder');
+    if (existingPlaceholder) existingPlaceholder.remove();
+
+    const afterElement = getDragAfterElement(group, e.clientY);
+    const placeholder = document.createElement('div');
+    placeholder.className = 'drag-placeholder';
+
+    if (afterElement) {
+        group.insertBefore(placeholder, afterElement);
+    } else {
+        group.appendChild(placeholder);
+    }
+}
+
+function handleDragLeave(e) {
+    const group = e.currentTarget;
+    // Only remove if we actually left the group (not entering a child)
+    if (!group.contains(e.relatedTarget)) {
+        group.classList.remove('drag-over');
+        const placeholder = group.querySelector('.drag-placeholder');
+        if (placeholder) placeholder.remove();
+    }
+}
+
+function handleDrop(e, targetCategory) {
+    e.preventDefault();
+    const group = e.currentTarget;
+    group.classList.remove('drag-over');
+
+    const bookmarkId = Number(e.dataTransfer.getData('text/plain'));
+    if (!bookmarkId) return;
+
+    // Determine drop position by finding which bookmark we're inserting before
+    const afterElement = getDragAfterElement(group, e.clientY);
+    const afterBookmarkId = afterElement ? Number(afterElement.dataset.bookmarkId) : null;
+
+    // Clean up placeholder
+    const placeholder = group.querySelector('.drag-placeholder');
+    if (placeholder) placeholder.remove();
+
+    // Reorder in the flat array
+    reorderBookmark(bookmarkId, targetCategory, afterBookmarkId);
+}
+
+function reorderBookmark(draggedId, targetCategory, beforeId) {
+    let bookmarks = getBookmarksFromStorage();
+
+    // Find and remove the dragged bookmark
+    const draggedIndex = bookmarks.findIndex(b => b.id === draggedId);
+    if (draggedIndex === -1) return;
+
+    const [draggedBookmark] = bookmarks.splice(draggedIndex, 1);
+
+    // Update category if moved to a different group
+    draggedBookmark.category = targetCategory;
+
+    if (beforeId !== null) {
+        // Insert before the target bookmark
+        const targetIndex = bookmarks.findIndex(b => b.id === beforeId);
+        if (targetIndex !== -1) {
+            bookmarks.splice(targetIndex, 0, draggedBookmark);
+        } else {
+            bookmarks.push(draggedBookmark);
+        }
+    } else {
+        // Dropped at the end of the category group — insert after the last bookmark in that category
+        let lastIndexInCategory = -1;
+        for (let i = bookmarks.length - 1; i >= 0; i--) {
+            if ((bookmarks[i].category || '') === targetCategory) {
+                lastIndexInCategory = i;
+                break;
+            }
+        }
+        if (lastIndexInCategory !== -1) {
+            bookmarks.splice(lastIndexInCategory + 1, 0, draggedBookmark);
+        } else {
+            // No bookmarks in this category yet, just push
+            bookmarks.push(draggedBookmark);
+        }
+    }
+
+    // Persist and re-render
+    localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
+    loadBookmarks();
+}
+
 // Load bookmarks with category grouping
 function loadBookmarks() {
     console.log('loadBookmarks called');
@@ -800,6 +940,12 @@ function loadBookmarks() {
             // Create category group container
             const categoryGroup = document.createElement('div');
             categoryGroup.className = 'category-group';
+            categoryGroup.dataset.category = category;
+
+            // Drag & drop zone listeners
+            categoryGroup.addEventListener('dragover', handleDragOver);
+            categoryGroup.addEventListener('dragleave', handleDragLeave);
+            categoryGroup.addEventListener('drop', (e) => handleDrop(e, category));
 
             // Add bookmarks in this category
             groupedBookmarks[category].forEach(bookmark => {
