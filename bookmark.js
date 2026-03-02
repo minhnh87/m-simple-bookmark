@@ -781,10 +781,12 @@ function handleDragEnd(e) {
     document.querySelectorAll('.drag-placeholder').forEach(el => el.remove());
 }
 
-function getDragAfterElement(container, x, y) {
+function getDragAfterElement(container, x, y, isDropEvent = false) {
     const draggableElements = [...container.querySelectorAll('.bookmark-item:not(.dragging)')];
     let closest = null;
     let closestDist = Number.POSITIVE_INFINITY;
+
+    const debugElements = [];
 
     draggableElements.forEach(child => {
         const box = child.getBoundingClientRect();
@@ -805,6 +807,14 @@ function getDragAfterElement(container, x, y) {
             cursorIsAfter = x > centerX;
         }
 
+        if (isDropEvent) {
+            debugElements.push({
+                name: child.querySelector('.bookmark-name')?.textContent,
+                id: child.dataset.bookmarkId,
+                centerX, centerY, cursorIsAfter
+            });
+        }
+
         // We want elements the cursor is NOT after (cursor is before them)
         if (!cursorIsAfter) {
             const dist = Math.sqrt((x - centerX) ** 2 + (y - centerY) ** 2);
@@ -814,6 +824,13 @@ function getDragAfterElement(container, x, y) {
             }
         }
     });
+
+    if (isDropEvent) {
+        console.log('[DnD Position]', {
+            elements: debugElements,
+            chosen: closest ? closest.querySelector('.bookmark-name')?.textContent : 'END'
+        });
+    }
 
     return closest;
 }
@@ -859,8 +876,16 @@ function handleDrop(e, targetCategory) {
     if (!bookmarkId) return;
 
     // Determine drop position by finding which bookmark we're inserting before
-    const afterElement = getDragAfterElement(group, e.clientX, e.clientY);
+    const afterElement = getDragAfterElement(group, e.clientX, e.clientY, true);
     const afterBookmarkId = afterElement ? Number(afterElement.dataset.bookmarkId) : null;
+
+    console.log('[DnD Drop]', {
+        draggedId: bookmarkId,
+        insertBeforeElement: afterElement ? afterElement.querySelector('.bookmark-name')?.textContent : 'END',
+        insertBeforeId: afterBookmarkId,
+        cursorX: e.clientX,
+        cursorY: e.clientY
+    });
 
     // Clean up placeholder
     const placeholder = group.querySelector('.drag-placeholder');
@@ -873,11 +898,15 @@ function handleDrop(e, targetCategory) {
 function reorderBookmark(draggedId, targetCategory, beforeId) {
     let bookmarks = getBookmarksFromStorage();
 
+    console.log('[DnD Reorder] Before:', bookmarks.map(b => b.name));
+
     // Find and remove the dragged bookmark
     const draggedIndex = bookmarks.findIndex(b => b.id === draggedId);
     if (draggedIndex === -1) return;
 
     const [draggedBookmark] = bookmarks.splice(draggedIndex, 1);
+
+    console.log('[DnD Reorder] Dragged:', draggedBookmark.name, 'beforeId:', beforeId);
 
     // Update category if moved to a different group
     draggedBookmark.category = targetCategory;
@@ -906,6 +935,8 @@ function reorderBookmark(draggedId, targetCategory, beforeId) {
             bookmarks.push(draggedBookmark);
         }
     }
+
+    console.log('[DnD Reorder] After:', bookmarks.map(b => b.name));
 
     // Persist and re-render
     localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
