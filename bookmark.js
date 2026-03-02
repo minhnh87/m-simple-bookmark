@@ -781,17 +781,37 @@ function handleDragEnd(e) {
     document.querySelectorAll('.drag-placeholder').forEach(el => el.remove());
 }
 
-function getDragAfterElement(container, y) {
+function getDragAfterElement(container, x, y) {
     const draggableElements = [...container.querySelectorAll('.bookmark-item:not(.dragging)')];
     let closest = null;
-    let closestOffset = Number.NEGATIVE_INFINITY;
+    let closestDist = Number.POSITIVE_INFINITY;
 
     draggableElements.forEach(child => {
         const box = child.getBoundingClientRect();
-        const offset = y - box.top - box.height / 2;
-        if (offset < 0 && offset > closestOffset) {
-            closestOffset = offset;
-            closest = child;
+        const centerX = box.left + box.width / 2;
+        const centerY = box.top + box.height / 2;
+        const rowThreshold = box.height / 2;
+
+        // Determine if cursor is "after" this element in grid order
+        let cursorIsAfter;
+        if (y > centerY + rowThreshold) {
+            // Cursor is on a row below this element
+            cursorIsAfter = true;
+        } else if (y < centerY - rowThreshold) {
+            // Cursor is on a row above this element
+            cursorIsAfter = false;
+        } else {
+            // Same row — after if cursor is past the horizontal center
+            cursorIsAfter = x > centerX;
+        }
+
+        // We want elements the cursor is NOT after (cursor is before them)
+        if (!cursorIsAfter) {
+            const dist = Math.sqrt((x - centerX) ** 2 + (y - centerY) ** 2);
+            if (dist < closestDist) {
+                closestDist = dist;
+                closest = child;
+            }
         }
     });
 
@@ -809,7 +829,7 @@ function handleDragOver(e) {
     const existingPlaceholder = group.querySelector('.drag-placeholder');
     if (existingPlaceholder) existingPlaceholder.remove();
 
-    const afterElement = getDragAfterElement(group, e.clientY);
+    const afterElement = getDragAfterElement(group, e.clientX, e.clientY);
     const placeholder = document.createElement('div');
     placeholder.className = 'drag-placeholder';
 
@@ -839,7 +859,7 @@ function handleDrop(e, targetCategory) {
     if (!bookmarkId) return;
 
     // Determine drop position by finding which bookmark we're inserting before
-    const afterElement = getDragAfterElement(group, e.clientY);
+    const afterElement = getDragAfterElement(group, e.clientX, e.clientY);
     const afterBookmarkId = afterElement ? Number(afterElement.dataset.bookmarkId) : null;
 
     // Clean up placeholder
