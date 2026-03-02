@@ -510,7 +510,7 @@ button:hover {
 }
 
 .tab-button:hover {
-    color: #24292f;
+    color: var(--secondary-color);
 }
 
 .tab-button.active {
