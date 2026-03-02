@@ -1613,6 +1613,19 @@ button:hover {
         animation: none;
         transform: none;
     }
+    .bookmark-item.drag-ghost {
+        animation: none;
+    }
+}
+
+/* Ghost preview for drag & drop — occupies a real grid cell */
+.bookmark-item.drag-ghost {
+    opacity: 0.4;
+    pointer-events: none;
+    border: 2px dashed #3b82f6;
+    background-color: rgba(59, 130, 246, 0.08);
+    box-shadow: none;
+    animation: none;
 }
 
 /* Touch targets for mobile */

@@ -724,6 +724,7 @@ function createBookmarkElement(bookmark) {
 
 let draggedBookmarkId = null;
 let dropTargetElement = null;
+let dragGhostElement = null;
 
 function handleDragStart(e, bookmarkId) {
     draggedBookmarkId = bookmarkId;
@@ -736,10 +737,20 @@ function handleDragStart(e, bookmarkId) {
     });
 }
 
+function removeDragGhost() {
+    if (dragGhostElement) {
+        dragGhostElement.remove();
+        dragGhostElement = null;
+    }
+    // Also clean up any stale ghosts
+    document.querySelectorAll('.drag-ghost').forEach(el => el.remove());
+}
+
 function handleDragEnd(e) {
     e.target.closest('.bookmark-item').classList.remove('dragging');
     draggedBookmarkId = null;
     dropTargetElement = null;
+    removeDragGhost();
     // Clean up all drag-over classes and CSS indicators
     document.querySelectorAll('.category-group.drag-over').forEach(el => el.classList.remove('drag-over'));
     document.querySelectorAll('.drag-insert-before').forEach(el => el.classList.remove('drag-insert-before'));
@@ -747,38 +758,57 @@ function handleDragEnd(e) {
 }
 
 function getDragAfterElement(container, x, y) {
-    const draggableElements = [...container.querySelectorAll('.bookmark-item:not(.dragging)')];
-    let closest = null;
-    let closestDist = Number.POSITIVE_INFINITY;
+    const draggableElements = [...container.querySelectorAll('.bookmark-item:not(.dragging):not(.drag-ghost)')];
+    if (draggableElements.length === 0) return null;
 
+    // Group elements by visual row (items whose top values are within a threshold)
+    const rows = [];
     draggableElements.forEach(child => {
         const box = child.getBoundingClientRect();
-        const centerX = box.left + box.width / 2;
-        const centerY = box.top + box.height / 2;
-        const rowThreshold = box.height / 2;
-
-        // Determine if cursor is "after" this element in grid order
-        let cursorIsAfter;
-        if (y > centerY + rowThreshold) {
-            cursorIsAfter = true;
-        } else if (y < centerY - rowThreshold) {
-            cursorIsAfter = false;
-        } else {
-            // Same row — after if cursor is past the horizontal center
-            cursorIsAfter = x > centerX;
-        }
-
-        // We want elements the cursor is NOT after (cursor is before them)
-        if (!cursorIsAfter) {
-            const dist = Math.sqrt((x - centerX) ** 2 + (y - centerY) ** 2);
-            if (dist < closestDist) {
-                closestDist = dist;
-                closest = child;
+        const top = box.top;
+        // Find an existing row whose top is within half the item height
+        const threshold = box.height / 2;
+        let matched = false;
+        for (const row of rows) {
+            if (Math.abs(row.top - top) < threshold) {
+                row.items.push({ el: child, box });
+                matched = true;
+                break;
             }
+        }
+        if (!matched) {
+            rows.push({ top, items: [{ el: child, box }] });
         }
     });
 
-    return closest;
+    // Sort rows by vertical position
+    rows.sort((a, b) => a.top - b.top);
+
+    // Find the closest row to cursor Y
+    let closestRow = rows[0];
+    let closestRowDist = Math.abs(y - (closestRow.items[0].box.top + closestRow.items[0].box.height / 2));
+    for (let i = 1; i < rows.length; i++) {
+        const rowCenterY = rows[i].items[0].box.top + rows[i].items[0].box.height / 2;
+        const dist = Math.abs(y - rowCenterY);
+        if (dist < closestRowDist) {
+            closestRowDist = dist;
+            closestRow = rows[i];
+        }
+    }
+
+    // Sort items in the row by horizontal position (left to right)
+    closestRow.items.sort((a, b) => a.box.left - b.box.left);
+
+    // Within the closest row, find insertion point based on cursor X vs item horizontal centers
+    for (const item of closestRow.items) {
+        const centerX = item.box.left + item.box.width / 2;
+        if (x < centerX) {
+            return item.el;
+        }
+    }
+
+    // Cursor is past all items in this row — insert at end
+    return null;
 }
 
 function handleDragOver(e) {
@@ -788,20 +818,36 @@ function handleDragOver(e) {
     const group = e.currentTarget;
     group.classList.add('drag-over');
 
-    // Clean up all CSS indicators before recalculating
-    document.querySelectorAll('.drag-insert-before').forEach(el => el.classList.remove('drag-insert-before'));
-    document.querySelectorAll('.drag-insert-end').forEach(el => el.classList.remove('drag-insert-end'));
-
     const afterElement = getDragAfterElement(group, e.clientX, e.clientY);
 
     // Store the calculated target for use in handleDrop
     dropTargetElement = afterElement;
 
-    if (afterElement) {
-        afterElement.classList.add('drag-insert-before');
-        group.classList.remove('drag-insert-end');
-    } else {
-        group.classList.add('drag-insert-end');
+    // Create or reuse ghost element
+    if (!dragGhostElement && draggedBookmarkId !== null) {
+        const draggedEl = document.querySelector(`.bookmark-item[data-bookmark-id="${draggedBookmarkId}"]`);
+        if (draggedEl) {
+            dragGhostElement = draggedEl.cloneNode(true);
+            dragGhostElement.classList.remove('dragging');
+            dragGhostElement.classList.add('drag-ghost');
+            dragGhostElement.setAttribute('draggable', 'false');
+            dragGhostElement.removeAttribute('data-bookmark-id');
+        }
+    }
+
+    if (dragGhostElement) {
+        // Insert ghost at the correct position
+        if (afterElement) {
+            // Only move if not already in the right spot
+            if (afterElement.previousElementSibling !== dragGhostElement) {
+                group.insertBefore(dragGhostElement, afterElement);
+            }
+        } else {
+            // Append at end of group
+            if (dragGhostElement.parentNode !== group || group.lastElementChild !== dragGhostElement) {
+                group.appendChild(dragGhostElement);
+            }
+        }
     }
 }
 
@@ -812,6 +858,7 @@ function handleDragLeave(e) {
         group.classList.remove('drag-over');
         group.classList.remove('drag-insert-end');
         group.querySelectorAll('.drag-insert-before').forEach(el => el.classList.remove('drag-insert-before'));
+        removeDragGhost();
     }
 }
 
@@ -821,13 +868,17 @@ function handleDrop(e, targetCategory) {
     group.classList.remove('drag-over');
 
     const bookmarkId = Number(e.dataTransfer.getData('text/plain'));
-    if (!bookmarkId) return;
+    if (!bookmarkId) {
+        removeDragGhost();
+        return;
+    }
 
     // Use the already-calculated dropTargetElement from handleDragOver
     // (positions were correct during dragover because dragged item was collapsed)
     const beforeId = dropTargetElement ? Number(dropTargetElement.dataset.bookmarkId) : null;
 
-    // Clean up visual indicators
+    // Clean up ghost and visual indicators
+    removeDragGhost();
     document.querySelectorAll('.drag-insert-before').forEach(el => el.classList.remove('drag-insert-before'));
     document.querySelectorAll('.drag-insert-end').forEach(el => el.classList.remove('drag-insert-end'));
 
