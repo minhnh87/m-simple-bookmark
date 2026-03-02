@@ -511,6 +511,7 @@ button:hover {
 
 .tab-button:hover {
     color: #2563eb;
+    background: transparent;
 }
 
 .tab-button.active {
