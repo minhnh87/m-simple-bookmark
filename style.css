@@ -26,6 +26,14 @@
     --dark-gray: #2a2a2a;
     --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     --transition: all 0.3s ease;
+
+    /* Dark-theme tab variables */
+    --bg-sidebar: #21252b;
+    --bg-border: #181A1F;
+    --text-secondary: #9da5b4;
+    --text-muted: #676f7d;
+    --text-bright: #f8f8f0;
+    --blue: #528bff;
 }
 
 body {
@@ -490,82 +498,43 @@ button:hover {
 
 .tab-buttons {
     display: flex;
-    border-bottom: 1px solid #d1d5db;
-    margin-bottom: 24px;
-    gap: 0;
+    border-bottom: 1px solid var(--bg-border);
+    background: var(--bg-sidebar);
+    flex-shrink: 0;
+    padding: 0 8px;
 }
 
 .tab-button {
-    background: transparent;
-    color: #57606a;
+    padding: 10px 14px;
     border: none;
-    padding: 8px 16px;
-    margin: 0;
+    background: transparent;
+    color: var(--text-muted);
     cursor: pointer;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 500;
-    transition: all 0.2s ease;
+    font-family: inherit;
     position: relative;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    line-height: 20px;
     white-space: nowrap;
-}
-
-.tab-button::before {
-    content: '';
-    display: inline-block;
-    width: 16px;
-    height: 16px;
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-    opacity: 0.7;
-    transition: opacity 0.2s ease;
-}
-
-/* Icon styles for each tab */
-#notes-tab::before {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2357606a'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'%3E%3C/path%3E%3C/svg%3E");
-}
-
-#guides-tab::before {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2357606a'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253'%3E%3C/path%3E%3C/svg%3E");
-}
-
-#sticky-tab::before {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2357606a'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z'%3E%3C/path%3E%3C/svg%3E");
-}
-
-#tasks-tab::before {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2357606a'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4'%3E%3C/path%3E%3C/svg%3E");
+    transition: color 0.2s ease;
 }
 
 .tab-button:hover {
-    color: #24292f;
-    background-color: rgba(208, 215, 222, 0.15);
+    color: var(--text-secondary);
 }
 
 .tab-button.active {
-    color: #24292f;
-    font-weight: 600;
-    border-bottom-color: #464646;
-    background: transparent;
-}
-
-.tab-button.active::before {
-    opacity: 1;
+    color: var(--text-bright);
 }
 
 .tab-button.active::after {
     content: '';
     position: absolute;
     bottom: -1px;
-    left: 0;
-    right: 0;
+    left: 8px;
+    right: 8px;
     height: 2px;
-    background: #999;
+    background: var(--blue);
+    border-radius: 2px 2px 0 0;
 }
 
 .tab-content {
@@ -895,12 +864,12 @@ button:hover {
     }
 
     .tab-buttons {
-        margin-bottom: 10px;
+        padding: 0 4px;
     }
 
     .tab-button {
-        padding: 8px 15px;
-        font-size: 14px;
+        padding: 8px 10px;
+        font-size: 12px;
     }
 }
 
