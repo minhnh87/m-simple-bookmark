@@ -776,17 +776,16 @@ function handleDragStart(e, bookmarkId) {
 function handleDragEnd(e) {
     e.target.closest('.bookmark-item').classList.remove('dragging');
     draggedBookmarkId = null;
-    // Clean up all drag-over classes and placeholders
+    // Clean up all drag-over classes and CSS indicators
     document.querySelectorAll('.category-group.drag-over').forEach(el => el.classList.remove('drag-over'));
-    document.querySelectorAll('.drag-placeholder').forEach(el => el.remove());
+    document.querySelectorAll('.drag-insert-before').forEach(el => el.classList.remove('drag-insert-before'));
+    document.querySelectorAll('.drag-insert-end').forEach(el => el.classList.remove('drag-insert-end'));
 }
 
 function getDragAfterElement(container, x, y, isDropEvent = false) {
     const draggableElements = [...container.querySelectorAll('.bookmark-item:not(.dragging)')];
     let closest = null;
     let closestDist = Number.POSITIVE_INFINITY;
-
-    const debugElements = [];
 
     draggableElements.forEach(child => {
         const box = child.getBoundingClientRect();
@@ -807,15 +806,6 @@ function getDragAfterElement(container, x, y, isDropEvent = false) {
             cursorIsAfter = x > centerX;
         }
 
-        if (isDropEvent) {
-            debugElements.push({
-                name: child.querySelector('.bookmark-name')?.textContent,
-                id: child.dataset.bookmarkId,
-                rect: { left: box.left, top: box.top, width: box.width, height: box.height },
-                centerX, centerY, cursorIsAfter
-            });
-        }
-
         // We want elements the cursor is NOT after (cursor is before them)
         if (!cursorIsAfter) {
             const dist = Math.sqrt((x - centerX) ** 2 + (y - centerY) ** 2);
@@ -825,14 +815,6 @@ function getDragAfterElement(container, x, y, isDropEvent = false) {
             }
         }
     });
-
-    if (isDropEvent) {
-        console.log('[DnD Position]', {
-            cursor: { x, y },
-            elements: debugElements,
-            chosen: closest ? closest.querySelector('.bookmark-name')?.textContent : 'END'
-        });
-    }
 
     return closest;
 }
@@ -844,18 +826,17 @@ function handleDragOver(e) {
     const group = e.currentTarget;
     group.classList.add('drag-over');
 
-    // Remove existing placeholder
-    const existingPlaceholder = group.querySelector('.drag-placeholder');
-    if (existingPlaceholder) existingPlaceholder.remove();
+    // Clean up all CSS indicators before recalculating
+    document.querySelectorAll('.drag-insert-before').forEach(el => el.classList.remove('drag-insert-before'));
+    document.querySelectorAll('.drag-insert-end').forEach(el => el.classList.remove('drag-insert-end'));
 
     const afterElement = getDragAfterElement(group, e.clientX, e.clientY);
-    const placeholder = document.createElement('div');
-    placeholder.className = 'drag-placeholder';
 
     if (afterElement) {
-        group.insertBefore(placeholder, afterElement);
+        afterElement.classList.add('drag-insert-before');
+        group.classList.remove('drag-insert-end');
     } else {
-        group.appendChild(placeholder);
+        group.classList.add('drag-insert-end');
     }
 }
 
@@ -864,8 +845,8 @@ function handleDragLeave(e) {
     // Only remove if we actually left the group (not entering a child)
     if (!group.contains(e.relatedTarget)) {
         group.classList.remove('drag-over');
-        const placeholder = group.querySelector('.drag-placeholder');
-        if (placeholder) placeholder.remove();
+        group.classList.remove('drag-insert-end');
+        group.querySelectorAll('.drag-insert-before').forEach(el => el.classList.remove('drag-insert-before'));
     }
 }
 
@@ -877,21 +858,13 @@ function handleDrop(e, targetCategory) {
     const bookmarkId = Number(e.dataTransfer.getData('text/plain'));
     if (!bookmarkId) return;
 
-    // Determine drop position by finding which bookmark we're inserting before
+    // Clean up ALL visual indicators BEFORE calculating position
+    document.querySelectorAll('.drag-insert-before').forEach(el => el.classList.remove('drag-insert-before'));
+    document.querySelectorAll('.drag-insert-end').forEach(el => el.classList.remove('drag-insert-end'));
+
+    // NOW calculate position with clean DOM
     const afterElement = getDragAfterElement(group, e.clientX, e.clientY, true);
     const afterBookmarkId = afterElement ? Number(afterElement.dataset.bookmarkId) : null;
-
-    console.log('[DnD Drop]', {
-        draggedId: bookmarkId,
-        insertBeforeElement: afterElement ? afterElement.querySelector('.bookmark-name')?.textContent : 'END',
-        insertBeforeId: afterBookmarkId,
-        cursorX: e.clientX,
-        cursorY: e.clientY
-    });
-
-    // Clean up placeholder
-    const placeholder = group.querySelector('.drag-placeholder');
-    if (placeholder) placeholder.remove();
 
     // Reorder in the flat array
     reorderBookmark(bookmarkId, targetCategory, afterBookmarkId);
@@ -900,15 +873,11 @@ function handleDrop(e, targetCategory) {
 function reorderBookmark(draggedId, targetCategory, beforeId) {
     let bookmarks = getBookmarksFromStorage();
 
-    console.log('[DnD Reorder] Before:', bookmarks.map(b => b.name));
-
     // Find and remove the dragged bookmark
     const draggedIndex = bookmarks.findIndex(b => b.id === draggedId);
     if (draggedIndex === -1) return;
 
     const [draggedBookmark] = bookmarks.splice(draggedIndex, 1);
-
-    console.log('[DnD Reorder] Dragged:', draggedBookmark.name, 'beforeId:', beforeId);
 
     // Update category if moved to a different group
     draggedBookmark.category = targetCategory;
@@ -937,8 +906,6 @@ function reorderBookmark(draggedId, targetCategory, beforeId) {
             bookmarks.push(draggedBookmark);
         }
     }
-
-    console.log('[DnD Reorder] After:', bookmarks.map(b => b.name));
 
     // Persist and re-render
     localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
