@@ -324,21 +324,11 @@ function importBookmarks(e) {
     reader.onload = function(event) {
         try {
             const importedData = JSON.parse(event.target.result);
-            console.log('Import data structure:', Object.keys(importedData || {}));
-            console.log('Full imported data:', importedData);
-            console.log('Available modules:', {
-                Notes: !!window.Notes,
-                Tasks: !!window.Tasks,
-                Sticky: !!window.Sticky,
-                Guides: !!window.Guides,
-                Working: !!window.Working
-            });
 
             // Handle different formats
             if (Array.isArray(importedData)) {
                 // Legacy format - just bookmarks array
                 if (importedData.length > 0) {
-                    console.log('Processing legacy bookmarks array:', importedData.length);
                     // Ensure legacy bookmarks have the right structure
                     const legacyBookmarks = importedData.map(bookmark => ({
                         id: bookmark.id || Date.now() + Math.random(),
@@ -361,7 +351,6 @@ function importBookmarks(e) {
 
                 // Import bookmarks with validation
                 if (Array.isArray(importedData.bookmarks) && importedData.bookmarks.length > 0) {
-                    console.log('Processing bookmarks:', importedData.bookmarks.length);
                     const validBookmarks = importedData.bookmarks.filter(bookmark =>
                         bookmark &&
                         typeof bookmark === 'object' &&
@@ -380,29 +369,23 @@ function importBookmarks(e) {
                         isDefault: bookmark.isDefault || false
                     }));
 
-                    console.log('Valid bookmarks:', validBookmarks.length);
                     if (validBookmarks.length > 0) {
                         const success = safeLocalStorageOperation('set', 'bookmarks', JSON.stringify(validBookmarks));
                         if (success === true) {
-                            console.log('Bookmarks saved to localStorage, triggering reload...');
                             setTimeout(() => {
-                                console.log('Loading bookmarks from storage...');
                                 loadBookmarks();
                                 // Verify data was saved
                                 const savedBookmarks = getBookmarksFromStorage();
-                                console.log('Bookmarks in storage after import:', savedBookmarks.length);
                             }, 50);
                         } else {
                             console.error('Failed to save bookmarks to localStorage');
                         }
                     }
                 } else if (importedData.bookmarks !== undefined) {
-                    console.log('Bookmarks data exists but is not a valid array:', typeof importedData.bookmarks);
                 }
 
                 // Import note with validation
                 if (importedData.note && typeof importedData.note === 'object' && importedData.note.content) {
-                    console.log('Processing note content');
                     const success = safeLocalStorageOperation('set', 'note', JSON.stringify(importedData.note));
                     if (success === true && window.Notes && window.Notes.initializeNote) {
                         setTimeout(() => window.Notes.initializeNote(), 50);
@@ -410,12 +393,10 @@ function importBookmarks(e) {
                         console.error('Failed to save note to localStorage');
                     }
                 } else if (importedData.note !== undefined) {
-                    console.log('Note data exists but is not valid:', typeof importedData.note);
                 }
 
                 // Import tasks with validation
                 if (Array.isArray(importedData.tasks) && importedData.tasks.length > 0) {
-                    console.log('Processing tasks:', importedData.tasks.length);
                     const validTasks = importedData.tasks.filter(task =>
                         task &&
                         typeof task === 'object' &&
@@ -424,7 +405,6 @@ function importBookmarks(e) {
                         task.text.trim() !== ''
                     );
 
-                    console.log('Valid tasks:', validTasks.length);
                     if (validTasks.length > 0) {
                         const success = safeLocalStorageOperation('set', 'tasks', JSON.stringify(validTasks));
                         if (success === true && window.Tasks && window.Tasks.loadTasks) {
@@ -434,12 +414,10 @@ function importBookmarks(e) {
                         }
                     }
                 } else if (importedData.tasks !== undefined) {
-                    console.log('Tasks data exists but is not a valid array:', typeof importedData.tasks);
                 }
 
                 // Import sticky notes with validation
                 if (Array.isArray(importedData.stickyNotes) && importedData.stickyNotes.length > 0) {
-                    console.log('Processing sticky notes:', importedData.stickyNotes.length);
                     const validStickyNotes = importedData.stickyNotes.filter(note =>
                         note &&
                         typeof note === 'object' &&
@@ -448,7 +426,6 @@ function importBookmarks(e) {
                         note.content.trim() !== ''
                     );
 
-                    console.log('Valid sticky notes:', validStickyNotes.length);
                     if (validStickyNotes.length > 0) {
                         const success = safeLocalStorageOperation('set', 'stickyNotes', JSON.stringify(validStickyNotes));
                         if (success === true && window.Sticky && window.Sticky.displayStickyNotes) {
@@ -458,12 +435,10 @@ function importBookmarks(e) {
                         }
                     }
                 } else if (importedData.stickyNotes !== undefined) {
-                    console.log('Sticky notes data exists but is not a valid array:', typeof importedData.stickyNotes);
                 }
 
                 // Import guides with validation
                 if (Array.isArray(importedData.guides) && importedData.guides.length > 0) {
-                    console.log('Processing guides:', importedData.guides.length);
                     const validGuides = importedData.guides.filter(guide =>
                         guide &&
                         typeof guide === 'object' &&
@@ -472,7 +447,6 @@ function importBookmarks(e) {
                         guide.title.trim() !== ''
                     );
 
-                    console.log('Valid guides:', validGuides.length);
                     if (validGuides.length > 0) {
                         const success = safeLocalStorageOperation('set', 'guides', JSON.stringify(validGuides));
                         if (success === true && window.Guides && window.Guides.displayGuidesList) {
@@ -483,13 +457,11 @@ function importBookmarks(e) {
 
                     }
                 } else if (importedData.guides !== undefined) {
-                    console.log('Guides data exists but is not a valid array:', typeof importedData.guides);
                 }
 
 
                 // Import commands with validation
                 if (Array.isArray(importedData.commands) && importedData.commands.length > 0) {
-                    console.log('Processing commands:', importedData.commands.length);
                     const validCommands = importedData.commands.filter(cmd =>
                         cmd &&
                         typeof cmd === 'object' &&
@@ -503,7 +475,6 @@ function importBookmarks(e) {
                         createdAt: cmd.createdAt || new Date().toISOString()
                     }));
 
-                    console.log('Valid commands:', validCommands.length);
                     if (validCommands.length > 0) {
                         const success = safeLocalStorageOperation('set', 'commands', JSON.stringify(validCommands));
                         if (success === true && window.Commands && window.Commands.loadCommands) {
@@ -513,12 +484,10 @@ function importBookmarks(e) {
                         }
                     }
                 } else if (importedData.commands !== undefined) {
-                    console.log('Commands data exists but is not a valid array:', typeof importedData.commands);
                 }
 
                 // Enhanced working links import with comprehensive validation
                 if (Array.isArray(importedData.workingLinks) && importedData.workingLinks.length > 0) {
-                    console.log('Processing working links:', importedData.workingLinks.length);
                     const validWorkingLinks = importedData.workingLinks.filter(link => {
                         if (!link || typeof link !== 'object') return false;
                         if (!link.url || typeof link.url !== 'string' || link.url.trim() === '') return false;
@@ -542,12 +511,10 @@ function importBookmarks(e) {
                         timestamp: link.timestamp || new Date().toISOString()
                     }));
 
-                    console.log('Valid working links:', validWorkingLinks.length);
                     if (validWorkingLinks.length > 0) {
 
                 // Import commands with validation
                 if (Array.isArray(importedData.commands) && importedData.commands.length > 0) {
-                    console.log('Processing commands:', importedData.commands.length);
                     const validCommands = importedData.commands.filter(cmd =>
                         cmd &&
                         typeof cmd === 'object' &&
@@ -561,7 +528,6 @@ function importBookmarks(e) {
                         createdAt: cmd.createdAt || new Date().toISOString()
                     }));
 
-                    console.log('Valid commands:', validCommands.length);
                     if (validCommands.length > 0) {
                         const success = safeLocalStorageOperation('set', 'commands', JSON.stringify(validCommands));
                         if (success === true && window.Commands && window.Commands.loadCommands) {
@@ -571,7 +537,6 @@ function importBookmarks(e) {
                         }
                     }
                 } else if (importedData.commands !== undefined) {
-                    console.log('Commands data exists but is not a valid array:', typeof importedData.commands);
                 }
 
                         const success = safeLocalStorageOperation('set', 'workingLinks', JSON.stringify(validWorkingLinks));
@@ -588,12 +553,10 @@ function importBookmarks(e) {
                         }
                     }
                 } else if (importedData.workingLinks !== undefined) {
-                    console.log('Working links data exists but is not a valid array:', typeof importedData.workingLinks);
                 }
 
                 // Import timeline activities with validation
                 if (Array.isArray(importedData.timelineActivities) && importedData.timelineActivities.length > 0) {
-                    console.log('Processing timeline activities:', importedData.timelineActivities.length);
                     const validTimelineActivities = importedData.timelineActivities.filter(activity =>
                         activity &&
                         typeof activity === 'object' &&
@@ -612,7 +575,6 @@ function importBookmarks(e) {
                         timestamp: activity.timestamp || new Date().toISOString()
                     }));
 
-                    console.log('Valid timeline activities:', validTimelineActivities.length);
                     if (validTimelineActivities.length > 0) {
                         const success = safeLocalStorageOperation('set', 'company-timeline-activities', JSON.stringify(validTimelineActivities));
                         if (success === true) {
@@ -621,7 +583,6 @@ function importBookmarks(e) {
                         }
                     }
                 } else if (importedData.timelineActivities !== undefined) {
-                    console.log('Timeline activities data exists but is not a valid array:', typeof importedData.timelineActivities);
                 }
 
                 showMessage('Import successful!', 'success');
@@ -762,9 +723,11 @@ function createBookmarkElement(bookmark) {
 // --- Drag & Drop ---
 
 let draggedBookmarkId = null;
+let dropTargetElement = null;
 
 function handleDragStart(e, bookmarkId) {
     draggedBookmarkId = bookmarkId;
+    dropTargetElement = null;
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/plain', String(bookmarkId));
     // Delay adding class so the drag image captures the original look
@@ -776,13 +739,14 @@ function handleDragStart(e, bookmarkId) {
 function handleDragEnd(e) {
     e.target.closest('.bookmark-item').classList.remove('dragging');
     draggedBookmarkId = null;
+    dropTargetElement = null;
     // Clean up all drag-over classes and CSS indicators
     document.querySelectorAll('.category-group.drag-over').forEach(el => el.classList.remove('drag-over'));
     document.querySelectorAll('.drag-insert-before').forEach(el => el.classList.remove('drag-insert-before'));
     document.querySelectorAll('.drag-insert-end').forEach(el => el.classList.remove('drag-insert-end'));
 }
 
-function getDragAfterElement(container, x, y, isDropEvent = false) {
+function getDragAfterElement(container, x, y) {
     const draggableElements = [...container.querySelectorAll('.bookmark-item:not(.dragging)')];
     let closest = null;
     let closestDist = Number.POSITIVE_INFINITY;
@@ -796,10 +760,8 @@ function getDragAfterElement(container, x, y, isDropEvent = false) {
         // Determine if cursor is "after" this element in grid order
         let cursorIsAfter;
         if (y > centerY + rowThreshold) {
-            // Cursor is on a row below this element
             cursorIsAfter = true;
         } else if (y < centerY - rowThreshold) {
-            // Cursor is on a row above this element
             cursorIsAfter = false;
         } else {
             // Same row — after if cursor is past the horizontal center
@@ -832,6 +794,9 @@ function handleDragOver(e) {
 
     const afterElement = getDragAfterElement(group, e.clientX, e.clientY);
 
+    // Store the calculated target for use in handleDrop
+    dropTargetElement = afterElement;
+
     if (afterElement) {
         afterElement.classList.add('drag-insert-before');
         group.classList.remove('drag-insert-end');
@@ -858,16 +823,19 @@ function handleDrop(e, targetCategory) {
     const bookmarkId = Number(e.dataTransfer.getData('text/plain'));
     if (!bookmarkId) return;
 
-    // Clean up ALL visual indicators BEFORE calculating position
+    // Use the already-calculated dropTargetElement from handleDragOver
+    // (positions were correct during dragover because dragged item was collapsed)
+    const beforeId = dropTargetElement ? Number(dropTargetElement.dataset.bookmarkId) : null;
+
+    // Clean up visual indicators
     document.querySelectorAll('.drag-insert-before').forEach(el => el.classList.remove('drag-insert-before'));
     document.querySelectorAll('.drag-insert-end').forEach(el => el.classList.remove('drag-insert-end'));
 
-    // NOW calculate position with clean DOM
-    const afterElement = getDragAfterElement(group, e.clientX, e.clientY, true);
-    const afterBookmarkId = afterElement ? Number(afterElement.dataset.bookmarkId) : null;
+    // Reset drop target
+    dropTargetElement = null;
 
     // Reorder in the flat array
-    reorderBookmark(bookmarkId, targetCategory, afterBookmarkId);
+    reorderBookmark(bookmarkId, targetCategory, beforeId);
 }
 
 function reorderBookmark(draggedId, targetCategory, beforeId) {
@@ -914,30 +882,21 @@ function reorderBookmark(draggedId, targetCategory, beforeId) {
 
 // Load bookmarks with category grouping
 function loadBookmarks() {
-    console.log('loadBookmarks called');
     const bookmarks = getBookmarksFromStorage();
-    console.log('Retrieved bookmarks:', bookmarks.length, bookmarks);
 
     const bookmarksList = window.UI.elements.bookmarksList;
-    console.log('Bookmarks list element:', bookmarksList);
 
-    if (!bookmarksList) {
-        console.error('Bookmarks list element not found!');
-        return;
-    }
+    if (!bookmarksList) return;
 
     bookmarksList.innerHTML = '';
 
     if (bookmarks.length === 0) {
-        console.log('No bookmarks found, showing empty message');
         const emptyMessage = document.createElement('div');
         emptyMessage.className = 'empty-message';
         emptyMessage.textContent = 'No bookmarks yet. Add some below!';
         bookmarksList.appendChild(emptyMessage);
         return;
     }
-
-    console.log('Creating grouped bookmark elements...');
 
     // Group bookmarks by category
     const groupedBookmarks = groupBookmarksByCategory(bookmarks);
@@ -978,7 +937,6 @@ function loadBookmarks() {
 
     // Single DOM manipulation
     bookmarksList.appendChild(fragment);
-    console.log('Bookmarks loaded successfully with grouping');
 }
 
 // Helper function to group bookmarks by category
