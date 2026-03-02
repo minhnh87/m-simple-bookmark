@@ -751,10 +751,8 @@ function handleDragEnd(e) {
     draggedBookmarkId = null;
     dropTargetElement = null;
     removeDragGhost();
-    // Clean up all drag-over classes and CSS indicators
+    // Clean up all drag-over classes
     document.querySelectorAll('.category-group.drag-over').forEach(el => el.classList.remove('drag-over'));
-    document.querySelectorAll('.drag-insert-before').forEach(el => el.classList.remove('drag-insert-before'));
-    document.querySelectorAll('.drag-insert-end').forEach(el => el.classList.remove('drag-insert-end'));
 }
 
 function getDragAfterElement(container, x, y) {
@@ -856,9 +854,9 @@ function handleDragLeave(e) {
     // Only remove if we actually left the group (not entering a child)
     if (!group.contains(e.relatedTarget)) {
         group.classList.remove('drag-over');
-        group.classList.remove('drag-insert-end');
-        group.querySelectorAll('.drag-insert-before').forEach(el => el.classList.remove('drag-insert-before'));
-        removeDragGhost();
+        if (dragGhostElement && dragGhostElement.parentNode === group) {
+            removeDragGhost();
+        }
     }
 }
 
@@ -877,10 +875,8 @@ function handleDrop(e, targetCategory) {
     // (positions were correct during dragover because dragged item was collapsed)
     const beforeId = dropTargetElement ? Number(dropTargetElement.dataset.bookmarkId) : null;
 
-    // Clean up ghost and visual indicators
+    // Clean up ghost
     removeDragGhost();
-    document.querySelectorAll('.drag-insert-before').forEach(el => el.classList.remove('drag-insert-before'));
-    document.querySelectorAll('.drag-insert-end').forEach(el => el.classList.remove('drag-insert-end'));
 
     // Reset drop target
     dropTargetElement = null;
