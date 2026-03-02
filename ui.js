@@ -44,8 +44,6 @@ const bookmarksContent = document.getElementById('bookmarks-content');
 const workingBookmarkContent = document.getElementById('working-bookmark-content');
 const workingBookmarkList = document.getElementById('working-bookmark-list');
 const workingBookmarkInput = document.getElementById('working-bookmark-input');
-const promptTab = document.getElementById('prompt-tab');
-const promptContent = document.getElementById('prompt-content');
 
 // Initialize UI when DOM is loaded
 function initializeUI() {
@@ -167,21 +165,15 @@ function initializeBookmarkTabs() {
         switchBookmarkTab('working');
     });
 
-    if (promptTab) {
-        promptTab.addEventListener('click', () => {
-            switchBookmarkTab('prompt');
-        });
-    }
-
     // Add keyboard navigation for bookmark tabs
-    [bookmarksTab, workingBookmarkTab, promptTab].forEach(tab => {
+    [bookmarksTab, workingBookmarkTab].forEach(tab => {
         if (!tab) return;
         tab.addEventListener('keydown', (e) => {
             if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
                 e.preventDefault();
                 const currentTab = e.target;
-                const tabs = [bookmarksTab, workingBookmarkTab, promptTab].filter(Boolean);
-                const tabNames = ['bookmarks', 'working', 'prompt'].slice(0, tabs.length);
+                const tabs = [bookmarksTab, workingBookmarkTab];
+                const tabNames = ['bookmarks', 'working'];
                 const currentIndex = tabs.indexOf(currentTab);
 
                 let targetIndex;
@@ -206,12 +198,12 @@ function initializeBookmarkTabs() {
 
 function switchBookmarkTab(tabName) {
     // Remove active class from all bookmark tabs and content
-    [bookmarksTab, workingBookmarkTab, promptTab].filter(Boolean).forEach(tab => {
+    [bookmarksTab, workingBookmarkTab].forEach(tab => {
         tab.classList.remove('active');
         tab.setAttribute('aria-selected', 'false');
         tab.setAttribute('tabindex', '-1');
     });
-    [bookmarksContent, workingBookmarkContent, promptContent].filter(Boolean).forEach(content => {
+    [bookmarksContent, workingBookmarkContent].forEach(content => {
         content.classList.remove('active');
     });
 
@@ -226,11 +218,6 @@ function switchBookmarkTab(tabName) {
         workingBookmarkContent.classList.add('active');
         workingBookmarkTab.setAttribute('aria-selected', 'true');
         workingBookmarkTab.setAttribute('tabindex', '0');
-    } else if (tabName === 'prompt' && promptTab && promptContent) {
-        promptTab.classList.add('active');
-        promptContent.classList.add('active');
-        promptTab.setAttribute('aria-selected', 'true');
-        promptTab.setAttribute('tabindex', '0');
     }
 }
 

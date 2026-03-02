@@ -21,10 +21,6 @@
                     <i class="fas fa-link" aria-hidden="true"></i>
                     <span class="nav-label">WK</span>
                 </button>
-                <button id="prompt-tab" class="sidebar-nav-button" role="tab" aria-selected="false" aria-controls="prompt-content">
-                    <i class="far fa-keyboard" aria-hidden="true"></i>
-                    <span class="nav-label">PR</span>
-                </button>
             </div>
 
             <!-- Control Buttons -->
@@ -77,28 +73,6 @@
                             </button>
                         </div>
                         <div id="working-bookmark-list" role="list" aria-label="Working links list"></div>
-                    </div>
-                    <div id="prompt-content" class="bookmark-tab-content" role="tabpanel" aria-labelledby="prompt-tab">
-                        <div class="prompt-container">
-                            <textarea id="prompt-textarea" placeholder="Enter your prompt here..."></textarea>
-                            <div class="prompt-controls">
-                                <div class="prompt-button-grid">
-                                    <button id="add-verification-text" class="control-button"><i class="fas fa-check-double" aria-hidden="true"></i><span>Add Verification Text</span></button>
-                                    <button id="copy-prompt-to-clipboard" class="control-button"><i class="fas fa-copy" aria-hidden="true"></i><span>Copy to Clipboard</span></button>
-                                    <button id="add-implementation-guide" class="control-button"><i class="fas fa-wrench" aria-hidden="true"></i><span>Add Implementation Guide</span></button>
-                                    <button id="clear-prompt-text" class="control-button"><i class="fas fa-eraser" aria-hidden="true"></i><span>Clear Text</span></button>
-                                    <button id="add-clean-code-reminder" class="control-button"><i class="fas fa-code" aria-hidden="true"></i><span>Add Clean Code Reminder</span></button>
-                                </div>
-                                <div class="prompt-custom-row">
-                                    <input type="text" id="custom-text-1-input" placeholder="Custom Text 1...">
-                                    <button id="add-custom-text-1-btn" class="control-button"><i class="fas fa-plus" aria-hidden="true"></i><span>Add Custom Text 1</span></button>
-                                </div>
-                                <div class="prompt-custom-row">
-                                    <input type="text" id="custom-text-2-input" placeholder="Custom Text 2...">
-                                    <button id="add-custom-text-2-btn" class="control-button"><i class="fas fa-plus" aria-hidden="true"></i><span>Add Custom Text 2</span></button>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
         </div>
@@ -203,7 +177,6 @@
     <script src="task.js"></script>
     <script src="sticky.js"></script>
     <script src="working.js"></script>
-    <script src="prompt.js"></script>
     <script>
         // Initialize all modules when DOM is loaded
         document.addEventListener('DOMContentLoaded', async () => {
@@ -216,7 +189,6 @@
             window.Guides.initializeGuides();
             window.Tasks.initializeTasks();
             window.Sticky.initializeSticky();
-            window.Prompt.initializePrompt();
             window.Working.initializeWorking();
         });
     </script>
