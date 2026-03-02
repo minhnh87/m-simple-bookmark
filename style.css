@@ -1562,26 +1562,57 @@ button:hover {
     pointer-events: none;
 }
 
+/* Pulse animation for drag indicators */
+@keyframes drag-indicator-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.55; }
+}
+
 .category-group.drag-over {
-    background-color: rgba(0, 123, 255, 0.04);
+    background-color: rgba(59, 130, 246, 0.05);
     border-radius: 4px;
-    outline: 1px dashed rgba(0, 123, 255, 0.3);
+    outline: 2px dashed rgba(59, 130, 246, 0.45);
     outline-offset: 2px;
 }
 
 /* CSS indicator for drag insert position — no DOM element in the grid */
+/* Grid view: thick left bar + background tint + slight lift */
 .bookmark-item.drag-insert-before {
-    box-shadow: -3px 0 0 0 #007bff, 0 2px 4px rgba(0, 0, 0, 0.08);
+    box-shadow:
+        -5px 0 0 0 #3b82f6,
+        0 2px 4px rgba(0, 0, 0, 0.08),
+        0 0 0 1px rgba(59, 130, 246, 0.15);
+    background-color: rgba(59, 130, 246, 0.06);
+    transform: scale(1.02);
+    animation: drag-indicator-pulse 1.2s ease-in-out infinite;
 }
 
-/* In row view, show top border instead of left border */
+/* In row view, show top bar instead of left bar */
 #bookmarks-list.row-view .bookmark-item.drag-insert-before {
-    box-shadow: 0 -3px 0 0 #007bff, 0 2px 4px rgba(0, 0, 0, 0.08);
+    box-shadow:
+        0 -5px 0 0 #3b82f6,
+        0 2px 4px rgba(0, 0, 0, 0.08),
+        0 0 0 1px rgba(59, 130, 246, 0.15);
+    background-color: rgba(59, 130, 246, 0.06);
+    transform: scale(1.02);
+    animation: drag-indicator-pulse 1.2s ease-in-out infinite;
 }
 
 /* Indicator when dropping at the end of a category group */
 .category-group.drag-insert-end {
-    box-shadow: inset 0 -3px 0 0 #007bff;
+    box-shadow:
+        inset 0 -4px 0 0 #3b82f6,
+        inset 0 -8px 12px -8px rgba(59, 130, 246, 0.15);
+    background-color: rgba(59, 130, 246, 0.03);
+}
+
+/* Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+    .bookmark-item.drag-insert-before,
+    #bookmarks-list.row-view .bookmark-item.drag-insert-before {
+        animation: none;
+        transform: none;
+    }
 }
 
 /* Touch targets for mobile */
