@@ -13,11 +13,11 @@
         <div class="left-sidebar">
             <!-- Tab Navigation Buttons -->
             <div class="sidebar-nav" role="tablist" aria-label="Bookmark navigation">
-                <button id="bookmarks-tab" class="sidebar-nav-button active" role="tab" aria-selected="true" aria-controls="bookmarks-content">
+                <button id="bookmarks-tab" class="sidebar-nav-button active" role="tab" aria-selected="true" aria-controls="bookmarks-content" title="Bookmarks">
                     <i class="far fa-bookmark" aria-hidden="true"></i>
                     <span class="nav-label">BM</span>
                 </button>
-                <button id="working-bookmark-tab" class="sidebar-nav-button" role="tab" aria-selected="false" aria-controls="working-bookmark-content">
+                <button id="working-bookmark-tab" class="sidebar-nav-button" role="tab" aria-selected="false" aria-controls="working-bookmark-content" title="Working links">
                     <i class="fas fa-link" aria-hidden="true"></i>
                     <span class="nav-label">WK</span>
                 </button>
@@ -25,21 +25,24 @@
 
             <!-- Control Buttons -->
             <div class="sidebar-controls">
-                <button id="restore-default" class="sidebar-control-button" aria-label="Restore default bookmarks and clear all data">
+                <button id="restore-default" class="sidebar-control-button" title="Restore defaults" aria-label="Restore default bookmarks and clear all data">
                     <i class="fas fa-undo" aria-hidden="true"></i>
                 </button>
-                <button id="export-bookmarks" class="sidebar-control-button" aria-label="Export all bookmarks, notes and tasks">
-                    <i class="fas fa-file-export" aria-hidden="true"></i>Export
+                <button id="export-bookmarks" class="sidebar-control-button" title="Export data" aria-label="Export all bookmarks, notes and tasks">
+                    <i class="fas fa-file-export" aria-hidden="true"></i>
+                    <span class="nav-label">E</span>
                 </button>
-
-                <button id="import-bookmarks" class="sidebar-control-button" aria-label="Import bookmarks, notes and tasks from a file">
-                    <i class="fas fa-file-import" aria-hidden="true"></i>Import
+                <button id="import-bookmarks" class="sidebar-control-button" title="Import data" aria-label="Import bookmarks, notes and tasks from a file">
+                    <i class="fas fa-file-import" aria-hidden="true"></i>
+                    <span class="nav-label">I</span>
                 </button>
-                <button id="sync-bookmarks" class="sidebar-control-button" aria-label="Sync data to cloud">
+                <button id="sync-bookmarks" class="sidebar-control-button" title="Sync to cloud" aria-label="Sync data to cloud">
                     <i class="fas fa-cloud-upload-alt" aria-hidden="true"></i>
+                    <span class="nav-label">Up</span>
                 </button>
-                <button id="load-from-cloud" class="sidebar-control-button" aria-label="Load data from cloud and overwrite local storage">
-                    <i class="fas fa-cloud-download-alt" aria-hidden="true"></i>Load from Cloud
+                <button id="load-from-cloud" class="sidebar-control-button" title="Load from cloud" aria-label="Load data from cloud and overwrite local storage">
+                    <i class="fas fa-cloud-download-alt" aria-hidden="true"></i>
+                    <span class="nav-label">Load</span>
                 </button>
                 <input type="file" id="import-file" accept=".json" style="display: none;">
             </div>
