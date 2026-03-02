@@ -26,14 +26,6 @@
     --dark-gray: #2a2a2a;
     --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     --transition: all 0.3s ease;
-
-    /* Dark-theme tab variables */
-    --bg-sidebar: #21252b;
-    --bg-border: #181A1F;
-    --text-secondary: #9da5b4;
-    --text-muted: #676f7d;
-    --text-bright: #f8f8f0;
-    --blue: #528bff;
 }
 
 body {
@@ -498,8 +490,7 @@ button:hover {
 
 .tab-buttons {
     display: flex;
-    border-bottom: 1px solid var(--bg-border);
-    background: var(--bg-sidebar);
+    border-bottom: 1px solid #d1d5db;
     flex-shrink: 0;
     padding: 0 8px;
 }
@@ -508,7 +499,7 @@ button:hover {
     padding: 10px 14px;
     border: none;
     background: transparent;
-    color: var(--text-muted);
+    color: #57606a;
     cursor: pointer;
     font-size: 13px;
     font-weight: 500;
@@ -519,11 +510,11 @@ button:hover {
 }
 
 .tab-button:hover {
-    color: var(--text-secondary);
+    color: #24292f;
 }
 
 .tab-button.active {
-    color: var(--text-bright);
+    color: #24292f;
 }
 
 .tab-button.active::after {
@@ -533,7 +524,7 @@ button:hover {
     left: 8px;
     right: 8px;
     height: 2px;
-    background: var(--blue);
+    background: var(--accent-color, #fd7e14);
     border-radius: 2px 2px 0 0;
 }
 
