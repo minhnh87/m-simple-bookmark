@@ -247,7 +247,7 @@ function displayGuidesList() {
     });
 }
 
-// Display guide content (like note-item)
+// Display guide content with markdown toggle (edit on focus, preview on blur)
 function displayGuideContent(guideId) {
     const guides = getGuidesFromStorage();
     const guide = guides.find(g => g.id === guideId);
@@ -272,46 +272,93 @@ function displayGuideContent(guideId) {
     const guideItem = document.createElement('div');
     guideItem.className = 'guide-item-content';
 
-    // Create guide content textarea (similar to note-content)
-    const guideContent = document.createElement('textarea');
-    guideContent.className = 'guide-content';
-    guideContent.value = guide.content;
-    guideContent.placeholder = 'Write your guide content here...';
-    guideContent.spellcheck = false;
+    let skipBlurSave = false;
 
-    // Handle key events for save (Enter) and cancel (Escape) - same as Notes
-    guideContent.addEventListener('keydown', (e) => {
-        // Save on Enter key (without shift for new line)
-        if (e.key === 'Enter' && !e.shiftKey) {
+    // Create textarea (edit mode)
+    const textarea = document.createElement('textarea');
+    textarea.className = 'guide-content';
+    textarea.value = guide.content;
+    textarea.placeholder = 'Write your guide content here...';
+    textarea.spellcheck = false;
+
+    // Create preview div (preview mode)
+    const previewDiv = document.createElement('div');
+    previewDiv.className = 'guide-preview';
+
+    // Set initial visibility based on content
+    if (guide.content) {
+        textarea.style.display = 'none';
+        previewDiv.style.display = 'block';
+        previewDiv.innerHTML = renderMarkdown(guide.content);
+    } else {
+        textarea.style.display = 'block';
+        previewDiv.style.display = 'none';
+    }
+
+    // Click on preview → switch to edit mode
+    previewDiv.addEventListener('click', () => {
+        previewDiv.style.display = 'none';
+        textarea.style.display = 'block';
+        textarea.focus();
+        // Auto-resize textarea to match content
+        textarea.style.height = 'auto';
+        textarea.style.height = textarea.scrollHeight + 'px';
+    });
+
+    // Textarea blur → save and switch to preview
+    textarea.addEventListener('blur', () => {
+        if (!skipBlurSave) {
+            saveGuide(guideId, textarea.value);
+        }
+        skipBlurSave = false;
+        previewDiv.innerHTML = renderMarkdown(textarea.value);
+
+        if (textarea.value.trim()) {
+            textarea.style.display = 'none';
+            previewDiv.style.display = 'block';
+        } else {
+            // Keep textarea visible if empty
+            textarea.style.display = 'block';
+            previewDiv.style.display = 'none';
+        }
+    });
+
+    // Keyboard shortcuts
+    textarea.addEventListener('keydown', (e) => {
+        // Ctrl+S / Cmd+S → save and switch to preview
+        if (e.key === 's' && (e.ctrlKey || e.metaKey)) {
             e.preventDefault();
-            saveGuide(guideId, guideContent.value);
-            guideContent.blur();
+            saveGuide(guideId, textarea.value);
+            previewDiv.innerHTML = renderMarkdown(textarea.value);
+            if (textarea.value.trim()) {
+                textarea.style.display = 'none';
+                previewDiv.style.display = 'block';
+            }
+            skipBlurSave = true;
+            textarea.blur();
         }
 
-        // Cancel on Escape key
+        // Escape → revert and switch to preview
         if (e.key === 'Escape') {
             e.preventDefault();
-            // Get the most recent content from localStorage
-            const freshGuide = guides.find(g => g.id === guideId);
+            const freshGuides = getGuidesFromStorage();
+            const freshGuide = freshGuides.find(g => g.id === guideId);
             if (freshGuide) {
-                guideContent.value = freshGuide.content;
+                textarea.value = freshGuide.content;
             }
-            guideContent.blur();
+            previewDiv.innerHTML = renderMarkdown(textarea.value);
+            if (textarea.value.trim()) {
+                textarea.style.display = 'none';
+                previewDiv.style.display = 'block';
+            }
+            skipBlurSave = true;
+            textarea.blur();
         }
     });
 
-    // When focus is lost, revert to the most recent saved content
-    guideContent.addEventListener('blur', () => {
-        // Get the most recent content from localStorage
-        const freshGuides = getGuidesFromStorage();
-        const freshGuide = freshGuides.find(g => g.id === guideId);
-        if (freshGuide) {
-            guideContent.value = freshGuide.content;
-        }
-    });
-
-    // Append content to guide item
-    guideItem.appendChild(guideContent);
+    // Append both textarea and preview to guide item
+    guideItem.appendChild(textarea);
+    guideItem.appendChild(previewDiv);
 
     // Append guide item to container
     container.appendChild(guideItem);
@@ -323,40 +370,56 @@ function createGuideListElement(guide) {
     guideDiv.className = 'guide-list-item';
     guideDiv.setAttribute('data-id', guide.id);
 
-    // Add selected class if this is the currently viewed guide
     if (currentGuideId === guide.id) {
         guideDiv.classList.add('selected');
     }
 
-    // Apply random color if available, otherwise use default blue
     const color = guide.color || { bg: '#f0f8ff', border: '#87ceeb', accent: '#4682b4' };
-    // guideDiv.style.backgroundColor = color.bg;
-    // guideDiv.style.borderColor = color.border;
     guideDiv.style.borderLeftColor = color.accent;
 
-    // Handle title display
     const guideTitle = guide.title || 'Untitled Guide';
     const displayTitle = guideTitle.length > 40 ? guideTitle.substring(0, 40) + '...' : guideTitle;
 
+    // Create preview snippet: strip markdown, take first ~100 chars
+    const contentPreview = guide.content
+        ? guide.content
+            .replace(/#{1,6}\s/g, '')           // Remove headings
+            .replace(/\*\*|__/g, '')             // Remove bold
+            .replace(/\*|_/g, '')                // Remove italic
+            .replace(/`{1,3}[^`]*`{1,3}/g, '')  // Remove code
+            .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1') // Links → text
+            .replace(/^\s*[-*+]\s/gm, '')        // Remove list markers
+            .replace(/^\s*>\s/gm, '')            // Remove blockquote
+            .replace(/\n+/g, ' ')                // Newlines → spaces
+            .trim()
+            .substring(0, 100)
+        : '';
+    const displayPreview = contentPreview ? (contentPreview.length >= 100 ? contentPreview + '...' : contentPreview) : 'No content yet';
+
+    // Format date
+    const dateStr = guide.createdAt || '';
+    const displayDate = dateStr || 'No date';
+
     guideDiv.innerHTML = `
-        <div class="guide-title" title="${escapeHtml(guideTitle)}">
-            ${escapeHtml(displayTitle)}
+        <div class="guide-card-header">
+            <i class="fas fa-book guide-card-icon" aria-hidden="true"></i>
+            <div class="guide-title" title="${escapeHtml(guideTitle)}">
+                ${escapeHtml(displayTitle)}
+            </div>
+            <div class="guide-actions">
+                <button class="guide-btn delete-btn" onclick="window.Guides.deleteGuide(${guide.id})" title="Delete guide">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
         </div>
-        <div class="guide-actions">
-            <button class="guide-btn delete-btn" onclick="window.Guides.deleteGuide(${guide.id})" title="Delete guide">
-                <i class="fas fa-trash"></i>
-            </button>
+        <div class="guide-card-preview">${escapeHtml(displayPreview)}</div>
+        <div class="guide-card-date">
+            <i class="far fa-clock" aria-hidden="true"></i> ${escapeHtml(displayDate)}
         </div>
     `;
 
-    // Add click-to-view functionality
     guideDiv.addEventListener('click', (e) => {
-        // Don't trigger view if clicking on action buttons
-        if (e.target.closest('.guide-actions')) {
-            return;
-        }
-
-        // Show the guide content
+        if (e.target.closest('.guide-actions')) return;
         showGuideContent(guide.id);
     });
 

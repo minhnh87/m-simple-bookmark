@@ -698,8 +698,19 @@ function createBookmarkElement(bookmark) {
     const bookmarkActions = document.createElement('div');
     bookmarkActions.className = 'bookmark-actions';
 
-    // Create delete button (only for non-document.html bookmarks)
+    // Create edit and delete buttons (only for non-document.html bookmarks)
     if (!bookmark.url.includes('nos1hahaha.bitbucket.io/reading.html')) {
+        // Create edit button
+        const editBtn = document.createElement('button');
+        editBtn.className = 'edit-btn';
+        editBtn.innerHTML = '<i class="fas fa-pen" aria-hidden="true"></i>';
+        editBtn.setAttribute('aria-label', `Edit ${bookmark.name} bookmark`);
+        editBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            startEditBookmark(bookmarkItem, bookmark);
+        });
+        bookmarkActions.appendChild(editBtn);
+
         const deleteBtn = document.createElement('button');
         deleteBtn.className = 'delete-btn';
         deleteBtn.innerHTML = '<i class="fas fa-trash" aria-hidden="true"></i>';
@@ -718,6 +729,141 @@ function createBookmarkElement(bookmark) {
     bookmarkItem.appendChild(bookmarkActions);
 
     return bookmarkItem;
+}
+
+// --- Inline Edit Bookmark ---
+
+function startEditBookmark(bookmarkItem, bookmark) {
+    const bookmarkInfo = bookmarkItem.querySelector('.bookmark-info');
+    const bookmarkActions = bookmarkItem.querySelector('.bookmark-actions');
+
+    // Hide bookmark info and actions
+    bookmarkInfo.style.display = 'none';
+    bookmarkActions.style.display = 'none';
+
+    // Disable draggable while editing
+    bookmarkItem.setAttribute('draggable', 'false');
+
+    // Create editing form
+    const editForm = document.createElement('div');
+    editForm.className = 'bookmark-editing';
+
+    const nameInput = document.createElement('input');
+    nameInput.type = 'text';
+    nameInput.value = bookmark.name;
+    nameInput.placeholder = 'Bookmark name';
+    nameInput.setAttribute('aria-label', 'Edit bookmark name');
+
+    const urlInput = document.createElement('input');
+    urlInput.type = 'text';
+    urlInput.value = bookmark.url;
+    urlInput.placeholder = 'Bookmark URL';
+    urlInput.setAttribute('aria-label', 'Edit bookmark URL');
+
+    const editActions = document.createElement('div');
+    editActions.className = 'bookmark-edit-actions';
+
+    const saveBtn = document.createElement('button');
+    saveBtn.className = 'save-edit-btn';
+    saveBtn.innerHTML = '<i class="fas fa-check" aria-hidden="true"></i> Save';
+    saveBtn.setAttribute('aria-label', 'Save bookmark changes');
+
+    const cancelBtn = document.createElement('button');
+    cancelBtn.className = 'cancel-edit-btn';
+    cancelBtn.innerHTML = '<i class="fas fa-times" aria-hidden="true"></i> Cancel';
+    cancelBtn.setAttribute('aria-label', 'Cancel editing');
+
+    editActions.appendChild(saveBtn);
+    editActions.appendChild(cancelBtn);
+
+    editForm.appendChild(nameInput);
+    editForm.appendChild(urlInput);
+    editForm.appendChild(editActions);
+
+    bookmarkItem.appendChild(editForm);
+
+    // Focus name input
+    nameInput.focus();
+
+    // Save handler
+    const handleSave = () => {
+        saveEditBookmark(bookmark.id, nameInput.value, urlInput.value);
+    };
+
+    // Cancel handler
+    const handleCancel = () => {
+        editForm.remove();
+        bookmarkInfo.style.display = '';
+        bookmarkActions.style.display = '';
+        bookmarkItem.setAttribute('draggable', 'true');
+    };
+
+    saveBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        handleSave();
+    });
+
+    cancelBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        handleCancel();
+    });
+
+    // Keyboard shortcuts
+    const handleKeydown = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            handleSave();
+        } else if (e.key === 'Escape') {
+            e.preventDefault();
+            handleCancel();
+        }
+    };
+
+    nameInput.addEventListener('keydown', handleKeydown);
+    urlInput.addEventListener('keydown', handleKeydown);
+}
+
+function saveEditBookmark(id, newName, newUrl) {
+    const name = newName.trim();
+    let url = newUrl.trim();
+
+    // Validate
+    if (!name || !url) {
+        showMessage('Please fill in both name and URL', 'error');
+        return;
+    }
+
+    // Add protocol if missing
+    if (!url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('file://')) {
+        url = 'https://' + url;
+    }
+
+    // Validate URL format
+    if (!isValidUrl(url)) {
+        showMessage('Please enter a valid URL', 'error');
+        return;
+    }
+
+    // Sanitize inputs
+    const sanitizedName = sanitizeInput(name);
+    const sanitizedUrl = sanitizeInput(url);
+
+    // Update bookmark in localStorage
+    try {
+        let bookmarks = getBookmarksFromStorage();
+        const index = bookmarks.findIndex(b => b.id === id);
+        if (index !== -1) {
+            bookmarks[index].name = sanitizedName;
+            bookmarks[index].url = sanitizedUrl;
+            localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
+            showMessage('Bookmark updated', 'success');
+            loadBookmarks();
+        } else {
+            showMessage('Bookmark not found', 'error');
+        }
+    } catch (error) {
+        showMessage('Failed to update bookmark', 'error');
+    }
 }
 
 // --- Drag & Drop ---
