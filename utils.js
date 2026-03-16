@@ -207,7 +207,7 @@ function showMessage(message, type = 'info') {
 
     messageElement.innerHTML = `
         <div style="display: flex; align-items: center; gap: 10px;">
-            <span style="font-size: 16px; flex-shrink: 0;">${icons[type] || icons.info}</span>
+            <span style="font-size: 14px; flex-shrink: 0;">${icons[type] || icons.info}</span>
             <span style="flex: 1;">${message}</span>
         </div>
     `;

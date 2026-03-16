@@ -63,16 +63,16 @@ function initializeSticky() {
 // Generate random color for sticky note
 function getRandomStickyColor() {
     const colors = [
-        { bg: '#fffbf0', border: '#f0e68c', accent: '#daa520' }, // Yellow (default)
-        { bg: '#f0f8ff', border: '#add8e6', accent: '#4682b4' }, // Light blue
-        { bg: '#f5fffa', border: '#98fb98', accent: '#32cd32' }, // Light green
-        { bg: '#fff0f5', border: '#ffb6c1', accent: '#ff69b4' }, // Pink
-        { bg: '#f0fff0', border: '#90ee90', accent: '#228b22' }, // Mint green
-        { bg: '#ffefd5', border: '#ffdab9', accent: '#cd853f' }, // Peach
-        { bg: '#e6e6fa', border: '#dda0dd', accent: '#9370db' }, // Lavender
-        { bg: '#fff8dc', border: '#f0e68c', accent: '#bdb76b' }, // Cornsilk
+        { bg: '#ffffff', border: '#e2e8f0', accent: '#0891b2' }, // Cyan
+        { bg: '#ffffff', border: '#e2e8f0', accent: '#7c3aed' }, // Violet
+        { bg: '#ffffff', border: '#e2e8f0', accent: '#059669' }, // Emerald
+        { bg: '#ffffff', border: '#e2e8f0', accent: '#e11d48' }, // Rose
+        { bg: '#ffffff', border: '#e2e8f0', accent: '#ea580c' }, // Orange
+        { bg: '#ffffff', border: '#e2e8f0', accent: '#2563eb' }, // Blue
+        { bg: '#ffffff', border: '#e2e8f0', accent: '#d946ef' }, // Fuchsia
+        { bg: '#ffffff', border: '#e2e8f0', accent: '#0d9488' }, // Teal
     ];
-    
+
     return colors[Math.floor(Math.random() * colors.length)];
 }
 
@@ -154,23 +154,23 @@ function createStickyNoteElement(note) {
     const noteDiv = document.createElement('div');
     noteDiv.className = 'sticky-note-item';
     noteDiv.setAttribute('data-id', note.id);
-    
-    // Apply random color if available, otherwise use default yellow
-    const color = note.color || { bg: '#fffbf0', border: '#f0e68c', accent: '#daa520' };
+
+    // Apply accent color to left border
+    const color = note.color || { bg: '#ffffff', border: '#e2e8f0', accent: '#0891b2' };
     noteDiv.style.borderLeftColor = color.accent;
-    
+
     // Handle title display
     const noteTitle = note.title || 'Untitled';
     const displayTitle = noteTitle.length > 25 ? noteTitle.substring(0, 25) + '...' : noteTitle;
 
     // Handle content visibility - default to hidden for existing notes without showContent property
     const shouldShowContent = note.showContent === true;
-    const displayContent = shouldShowContent
+    const truncatedContent = shouldShowContent
         ? (note.content.length > 50 ? note.content.substring(0, 50) + '...' : note.content)
-        : 'hidden';
+        : '';
 
     const fullTitle = note.title ? `Title: ${note.title}\nContent: ${note.content}` : note.content;
-    
+
     noteDiv.innerHTML = `
         <div class="sticky-note-header">
             <div class="sticky-note-title" title="${escapeHtml(fullTitle)}">
@@ -178,18 +178,18 @@ function createStickyNoteElement(note) {
             </div>
         </div>
         <div class="sticky-note-content" title="${escapeHtml(fullTitle)}">
-            ${escapeHtml(displayContent)}
+            ${shouldShowContent ? escapeHtml(truncatedContent) : '<span class="sticky-hidden-icon"><i class="fas fa-eye-slash" aria-hidden="true"></i></span>'}
         </div>
         <div class="sticky-note-actions">
-            <button class="sticky-btn edit-btn" onclick="window.Sticky.startEditStickyNote(${note.id})" title="Edit note">
-                <i class="fas fa-edit"></i>
+            <button class="sticky-btn edit-btn" onclick="window.Sticky.startEditStickyNote(${note.id})" title="Edit note" aria-label="Edit note">
+                <i class="fas fa-edit" aria-hidden="true"></i>
             </button>
-            <button class="sticky-btn delete-btn" onclick="window.Sticky.deleteStickyNote(${note.id})" title="Delete note">
-                <i class="fas fa-trash"></i>
+            <button class="sticky-btn delete-btn" onclick="window.Sticky.deleteStickyNote(${note.id})" title="Delete note" aria-label="Delete note">
+                <i class="fas fa-trash" aria-hidden="true"></i>
             </button>
         </div>
     `;
-    
+
     // Add click-to-copy functionality
     noteDiv.addEventListener('click', (e) => {
         // Don't trigger copy if clicking on action buttons
@@ -200,13 +200,13 @@ function createStickyNoteElement(note) {
         // Only copy the content, not the title
         copyStickyNote(note.content);
 
-        // Show visual feedback
-        noteDiv.style.transform = 'scale(0.98)';
+        // Show visual feedback with border flash (no layout shift)
+        noteDiv.classList.add('copied');
         setTimeout(() => {
-            noteDiv.style.transform = '';
-        }, 150);
+            noteDiv.classList.remove('copied');
+        }, 300);
     });
-    
+
     return noteDiv;
 }
 

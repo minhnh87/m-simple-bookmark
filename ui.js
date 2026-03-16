@@ -291,88 +291,62 @@ function addMessageStyles() {
             z-index: 1000;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 10px;
             pointer-events: none;
         }
 
         .message {
-            padding: 16px 20px;
-            border-radius: 12px;
-            color: white;
+            padding: 10px 16px;
+            border-radius: 8px;
+            color: #1a1a1a;
             font-weight: 500;
-            font-size: 14px;
+            font-size: 13px;
             line-height: 1.4;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
-            backdrop-filter: blur(8px);
-            animation: slide-in 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            min-width: 280px;
-            max-width: 400px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.06);
+            animation: slide-in 0.3s ease-out;
+            min-width: 200px;
+            max-width: 320px;
             position: relative;
             pointer-events: auto;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .message::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            border-radius: 12px 12px 0 0;
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-left: 3px solid #3498db;
         }
 
         .success {
-            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
-        }
-
-        .success::before {
-            background: linear-gradient(90deg, #2ecc71, #27ae60);
+            border-left-color: #27ae60;
         }
 
         .error {
-            background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%);
-        }
-
-        .error::before {
-            background: linear-gradient(90deg, #e74c3c, #c0392b);
+            border-left-color: #e74c3c;
         }
 
         .info {
-            background: linear-gradient(135deg, #3498db 0%, #5dade2 100%);
-        }
-
-        .info::before {
-            background: linear-gradient(90deg, #5dade2, #3498db);
-        }
-
-        .message:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15), 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-left-color: #3498db;
         }
 
         .fade-out {
-            animation: fade-out 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+            animation: fade-out 0.3s ease-out forwards;
         }
 
         @keyframes slide-in {
             from {
-                transform: translateX(100%) scale(0.9);
+                transform: translateY(-20px);
                 opacity: 0;
             }
             to {
-                transform: translateX(0) scale(1);
+                transform: translateY(0);
                 opacity: 1;
             }
         }
 
         @keyframes fade-out {
             from {
-                transform: translateX(0) scale(1);
+                transform: translateY(0);
                 opacity: 1;
             }
             to {
-                transform: translateX(100%) scale(0.9);
+                transform: translateY(-20px);
                 opacity: 0;
             }
         }
@@ -388,8 +362,6 @@ function addMessageStyles() {
             .message {
                 min-width: auto;
                 max-width: none;
-                font-size: 13px;
-                padding: 14px 16px;
             }
         }
     `;
